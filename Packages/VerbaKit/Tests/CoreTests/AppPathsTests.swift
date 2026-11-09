@@ -11,6 +11,8 @@ struct AppPathsTests {
         #expect(paths.database.deletingLastPathComponent().standardizedFileURL == root.standardizedFileURL)
         #expect(paths.claudeWork.lastPathComponent == "claude-work")
         #expect(paths.claudeWork.deletingLastPathComponent().standardizedFileURL == root.standardizedFileURL)
+        #expect(paths.backups.lastPathComponent == "backups")
+        #expect(paths.backups.deletingLastPathComponent().standardizedFileURL == root.standardizedFileURL)
     }
 
     @Test func prepareFoldersCreatesAnEmptyClaudeWorkFolder() throws {
@@ -29,5 +31,17 @@ struct AppPathsTests {
         #expect(isDirectory.boolValue)
         #expect(
             try FileManager.default.contentsOfDirectory(atPath: paths.claudeWork.path(percentEncoded: false)).isEmpty)
+        #expect(FileManager.default.fileExists(atPath: paths.backups.path(percentEncoded: false)))
+    }
+
+    @Test func prepareFoldersThrowsATypedErrorWhenTheRootIsAFile() throws {
+        let root = FileManager.default.temporaryDirectory
+            .appending(path: "AppPathsTests-\(UUID().uuidString)", directoryHint: .notDirectory)
+        defer { try? FileManager.default.removeItem(at: root) }
+        try Data("not a folder".utf8).write(to: root)
+
+        #expect(throws: AppPathsError.foldersUnavailable) {
+            try AppPaths(root: root).prepareFolders()
+        }
     }
 }

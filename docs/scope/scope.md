@@ -23,9 +23,9 @@ Every feature that creates or grades learning material follows these. `/architec
 
 | # | Feature | Phase | Status |
 |---|---------|-------|--------|
-| 1 | Stack & architecture | Foundation | in-progress |
+| 1 | Stack & architecture | Foundation | done |
 | 2 | Coding standards & tooling | Foundation | done |
-| 3 | Data model | Foundation | planned |
+| 3 | Data model | Foundation | done |
 | 4 | Claude Code bridge | Foundation | planned |
 | 5 | Design system & UI foundation | Foundation | planned |
 | 6 | First lesson loop | Slice 1 | planned |
@@ -42,7 +42,7 @@ Every feature that creates or grades learning material follows these. `/architec
 
 ## Foundations
 
-### 1. Stack & architecture · Beta · in-progress
+### 1. Stack & architecture · Beta · done
 Decide how the native macOS app is built and where its data lives on disk, then scaffold a runnable app every slice builds on.
 **Done when:** the stack is recorded in a spec, and an empty app window builds and launches on the Mac.
 spec [0001](../specs/0001-stack-architecture/index.md) · code in `App/`, `Packages/VerbaKit/`, `project.yml`
@@ -56,10 +56,17 @@ code in `.swift-format`, `.swiftlint.yml`, `.githooks/pre-commit`
 - [x] Capture conventions + tooling choices: `/audit`
 - [x] Install the tooling: `/develop tooling`
 
-### 3. Data model · needs a decision
+### 3. Data model · done
 The saved shape of everything the app remembers: learner, language pairs, goal, level, lessons, exercises and answers, chat sessions, learning records, teaching preferences, review items, reference notes.
 **Done when:** every lesson, answer, chat, and score survives an app restart, and the shape already fits later slices (several languages, records, review, notebook) without a breaking migration.
-- [ ] Design it (spec): `/architect data model`
+spec [0002](../specs/0002-data-model/index.md) · code in `Packages/VerbaKit/Sources/Core/`, `Packages/VerbaKit/Sources/Persistence/`, `Packages/VerbaKit/Sources/Features/Launch/`, `App/`
+- [x] Design it (spec): `/architect data model`
+- [x] Build it: `/develop data model`
+  - [x] Core value types, rules (state, score, shuffler, grader), errors, and store protocols (AC-5, AC-6, AC-7, AC-8, AC-9, AC-14)
+  - [x] `v1_core` migration with the seven Slice 1 tables, row mapping, and error mapping (AC-1, AC-2, AC-3)
+  - [x] `LearnerStore` and `LessonStore` on GRDB with live streams and archive rules (AC-2, AC-3, AC-4, AC-7, AC-8, AC-9, AC-10, AC-13, AC-14)
+  - [x] Backup before migrating and the launch error screen instead of a crash (AC-11, AC-12)
+- [x] Verify it: `/check verify data model`
 
 ### 4. Claude Code bridge · needs a decision
 The one place the app talks to Claude, by running the local Claude Code CLI: sending prompts with the right learner context, getting structured lesson data back, streaming chat replies, and handling failures.
@@ -152,6 +159,7 @@ Out of scope for the current build pass, kept so the plan stays honest.
 - **Backup, export, and sync**: move progress to another Mac or iCloud · needs a decision
 - **Other ways to reach Claude**: an Anthropic API key in the Keychain as an alternative to Claude Code · needs a decision
 - **Public distribution**: signing, notarization, and release for other people · needs a decision
+- **Database growth cleanup** (from spec 0002): attempts and raw Claude replies are kept forever; revisit only if the database passes about 100 MB
 - **Payments**: only if the app is ever sold · needs a decision · GA
 
 ## Legend
