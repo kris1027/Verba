@@ -51,9 +51,15 @@ public struct AppDatabase: Sendable {
     }
 
     /// An in memory database with the same migrations, for tests.
-    public static func inMemory() throws -> AppDatabase {
-        let queue = try DatabaseQueue()
-        try migrator.migrate(queue)
-        return AppDatabase(queue)
+    /// - Throws: `PersistenceError.openFailed` when it can't be created or migrated.
+    public static func inMemory() throws(PersistenceError) -> AppDatabase {
+        do {
+            let queue = try DatabaseQueue()
+            try migrator.migrate(queue)
+            return AppDatabase(queue)
+        } catch {
+            Log.store.error("In memory database failed: \(String(describing: error), privacy: .public)")
+            throw .openFailed
+        }
     }
 }
