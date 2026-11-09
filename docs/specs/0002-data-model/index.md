@@ -54,7 +54,7 @@ Reasoning and options: see [rationale.md](rationale.md).
 - **No hard deletes**: rows that can be hidden carry `archivedAt DATETIME` (nullable); rows that can be superseded carry `replacedById` (later slices). No `DELETE` statement exists in `Persistence`.
 - **Closed sets** (values the app's logic depends on) get a `CHECK`: `lesson.state`, `attempt.grade`, `attempt.gradedBy`, and every boolean column (`IN (0,1)`). **Open sets** (kinds that grow without a migration) are plain `TEXT` without a check: `lesson.kind`, `exercise.kind`, `generation.kind`. Core decodes an unknown open set value as an error, never a crash.
 - **JSON columns** are `TEXT` holding JSON written by GRDB's `Codable` encoding, used only for values the app never filters by (`attempt.response`, later `reviewItem.schedulerState`).
-- **Errors**: every GRDB call goes through one internal `mapError` helper that turns a foreign key failure on a parent id into `StoreError.notFound`, a unique failure on `course (learnerId, targetLanguage)` into `duplicateCourse`, and anything else into `unavailable(reason:)`. Do not rely on typed throws inference across `writer.write`; catch and map outside the closure. Every error case has its own `errorDescription`.
+- **Errors**: every GRDB call goes through one internal `mapError` helper that turns a foreign key failure on a parent id into `StoreError.notFound`, and anything else into `unavailable(reason:)` with a fixed plain message (the engine's own text goes only to the private log). `addCourse` turns a unique failure on its insert into `duplicateCourse` itself, because the row's id is freshly generated, so only `course (learnerId, targetLanguage)` can reject it and nothing has to read SQLite's wording. Do not rely on typed throws inference across `writer.write`; catch and map outside the closure. Every error case has its own `errorDescription`.
 - **Mapping**: `Persistence` defines internal GRDB record structs (`LessonRow`, `AttemptRow`, …) and maps them to and from the public Core value types. Core types never conform to GRDB protocols. Runner up: retroactive GRDB conformances on Core types, rejected because they leak GRDB into the Core type's public surface and need `@retroactive`.
 
 **Data model sketch**:
@@ -152,7 +152,7 @@ Relationships: learner 1:N course · course 1:N lesson · course 1:N generation 
 ### Core types (public, in `Core`, each with a `///` doc comment)
 
 - `ID<Entity>`: a generic, `Sendable`, `Hashable`, `Codable` wrapper around `UUID` (phantom type, so a `LessonID` can never be passed where an `ExerciseID` is expected). Type aliases: `LearnerID`, `CourseID`, `LessonID`, `ExerciseID`, `ExercisePartID`, `AttemptID`, `GenerationID`. Runner up: one hand written struct per entity, rejected as boilerplate.
-- `LanguageTag`: validated BCP 47 tag. `init(_:) throws(ValidationError)` canonicalizes through `Locale.Language(identifier:)` and rejects empty strings, strings with characters outside letters, digits, and `-`, and identifiers whose language code is missing.
+- `LanguageTag`: validated BCP 47 tag. `init(_:) throws(ValidationError)` accepts only ASCII `language[-script][-region]` (2 or 3 letters, then 4 letters, then 2 letters or 3 digits; variants and extensions are rejected, because `Locale` would silently drop what it can't read). It canonicalizes through `Locale.identifier(.bcp47, from:)`, so a deprecated code becomes its replacement (`iw` becomes `he`), and keeps only the parts the tag named through `Locale.Language.Components` (`Locale.Language` would add a likely script, `pl-Latn`). It rejects `und`.
 - `Learner`, `Course`, `Lesson`, `Exercise`, `ExercisePart`, `Attempt`, `Generation`: value structs mirroring the columns.
 - `ExerciseKind`: enum `choice`, `fillBlank`, `translate`, `reorder`, `match` (decoding an unknown raw value throws), with `var displaysParts: Bool` (true for `choice`, `reorder`, `match`).
 - `NewLesson`: what ClaudeBridge (or a test) hands the store: lesson fields plus `[NewExercise]` each with `[NewExercisePart]`. Its public `init` throws `ValidationError.emptyLesson` for no exercises and `ValidationError.invalidExercise(position:reason:)` when a part rule in the table above fails. An `internal` unchecked initializer exists for tests only (`@testable import Core`), so AC-3 can inject a duplicate part id that only the database rejects.
@@ -164,7 +164,7 @@ Relationships: learner 1:N course · course 1:N lesson · course 1:N generation 
 - `OptionShuffler`: `func displayOrder(for kind: ExerciseKind, parts: [ExercisePart], using: inout some RandomNumberGenerator) -> [ExercisePartID]`, the app's shuffle rule (fair quizzes principle); returns `[]` when `kind.displaysParts` is false. Tests pass a seeded generator.
 - `LessonDetail`: lesson (all columns, including `archivedAt`), its `Generation` (nil only when `generationId` is null), ordered exercises by `position`, each with its parts (by `displayPosition` once set, else by `sourcePosition`; the set once, whole exercise write means a mix never exists) and its attempts (by `attemptNumber`), plus its `LessonScore`.
 - `LessonSummary`: id, title, topic, state, createdAt, completedAt, `LessonScore`.
-- Errors: `ValidationError` (`invalidLanguageTag`, `sameLanguage`, `emptyLesson`, `invalidExercise(position:reason:)`, `invalidDisplayOrder`, `invalidResponse`) and `StoreError` (`duplicateCourse`, `notFound`, `archived`, `displayOrderAlreadySet`, `invalid(ValidationError)`, `unavailable(reason:)`), both `LocalizedError` with a user facing message. Store methods use typed throws `throws(StoreError)`; a `ValidationError` raised inside a store call is wrapped as `StoreError.invalid(ValidationError)`.
+- Errors: `ValidationError` (`invalidLanguageTag`, `sameLanguage`, `emptyLesson`, `invalidExercise(position:reason:)`, `invalidDisplayOrder`, `invalidResponse`) and `StoreError` (`duplicateCourse`, `notFound`, `archived`, `displayOrderAlreadySet`, `invalid(ValidationError)`, `unavailable(reason:)`), both `LocalizedError` with a user facing message. Store methods use typed throws `throws(StoreError)`; a `ValidationError` raised inside a store call is wrapped as `StoreError.invalid(ValidationError)`. `AppPaths.prepareFolders()` throws `AppPathsError.foldersUnavailable`, also a `LocalizedError`.
 
 **State transitions**:
 
@@ -195,10 +195,10 @@ Every live read is built in `Persistence` from GRDB `ValueObservation` iterated 
 1. Record whether the file exists, before `DatabasePool(path:)` creates it.
 2. Open the pool (a corrupt file throws here: `PersistenceError.openFailed`).
 3. If the file existed and `migrator.hasCompletedMigrations(db)` is false, open a `DatabaseQueue` at `backups/verba-<yyyy-MM-dd'T'HH-mm-ss'Z'>.sqlite` (add `-2`, `-3` if that name exists) and run `pool.backup(to: queue)`. On failure delete that partial file and throw `PersistenceError.backupFailed`; no migration runs.
-4. Prune: list `verba-*.sqlite` in `backups/`, sort by name descending, delete all but the first 3.
+4. Prune: list `verba-*.sqlite` in `backups/`, sort newest first by timestamp and then by clash number (no suffix counts as 1, so `-10` is newer than `-2`), delete all but the first 3.
 5. Migrate (each migration is its own transaction; failure throws `PersistenceError.migrationFailed` and leaves earlier migrations applied).
 
-`AppEnvironment.launch()` returns `LaunchResult` (`ready(AppEnvironment)` or `failed(message:databaseURL:)`), covering `prepareFolders()` too. `VerbaApp` switches on it: `ready` shows `RootView`, `failed` shows `LaunchErrorView`. **Show Database in Finder** calls `NSWorkspace.activateFileViewerSelecting` on the file, or on the data folder when the file does not exist; **Quit** calls `NSApplication.shared.terminate`. `NSWorkspace` stays in the app target (passed into the view as closures), so `Features` keeps only SwiftUI.
+`AppEnvironment.launch()` returns `LaunchResult` (`ready(AppEnvironment)` or `failed(message:databaseURL:)`), covering `prepareFolders()` too. The ready-or-failed decision lives in `AppDatabase.launch(paths:)`, so package tests can cover it. `VerbaApp` switches on it: `ready` shows `RootView`, `failed` shows `LaunchErrorView`. **Show Database in Finder** calls `NSWorkspace.activateFileViewerSelecting` on the file, or on the data folder when the file does not exist; **Quit** calls `NSApplication.shared.terminate`. `NSWorkspace` stays in the app target (passed into the view as closures), so `Features` keeps only SwiftUI.
 
 **Value sourcing**:
 
@@ -217,7 +217,7 @@ Every live read is built in `Persistence` from GRDB `ValueObservation` iterated 
 | `observeLessons`, `lesson` | `LessonScore` | derived in Swift by `LessonScore.init(exercises:)`: exercises whose attempt 1 has `grade = correct`, over exercise count |
 | `lesson` | `Generation` | `generation` row by `lesson.generationId` |
 | `lesson` (reopen) | option order | `exercisePart.displayPosition`, falling back to `sourcePosition` when unset |
-| backup | file name timestamp | current UTC time, format `yyyy-MM-dd'T'HH-mm-ss'Z'` (no colons, safe in Finder, sorts by name), `-2` style suffix on a clash |
+| backup | file name timestamp | current UTC time, format `yyyy-MM-dd'T'HH-mm-ss'Z'` (no colons, safe in Finder), `-2` style suffix on a clash |
 | error screen | message, database location | `PersistenceError.errorDescription` (or the `prepareFolders` error's description); `AppPaths.database`, falling back to `AppPaths.root` when the file is missing |
 
 **Key invariants**:
@@ -240,7 +240,7 @@ None. New paths only: `AppPaths.backups` (`<data folder>/backups/`), created by 
 - Happy path: on a temp folder `DatabasePool`, create learner and course, save a five exercise lesson (one of each kind), save display orders, record attempts, close, reopen, and read an equal `LessonDetail` with the right score, verifies **AC-1**, **AC-2**, **AC-8**, **AC-9**
 - Migration: a file with only `v0_scaffold` migrates to `v1_core`, the schema matches (tables, `PRAGMA foreign_key_list`, indexes), and a backup file appears; a fresh file makes no backup; a fourth backup prunes the oldest, verifies **AC-1**, **AC-11**
 - Failure case: a `NewLesson` built with the internal unchecked initializer whose last part reuses an earlier part's id fails on the primary key and leaves zero `lesson`, `exercise`, `exercisePart`, and `generation` rows; a lesson for a random `CourseID` throws `notFound`, verifies **AC-3**
-- Failure case: a corrupt file (random bytes) makes `open` throw `openFailed` and the main file's bytes are unchanged afterwards (side files ignored); `AppEnvironment` returns `failed`, verifies **AC-12**
+- Failure case: a corrupt file (random bytes) makes `open` throw `openFailed` and the main file's bytes are unchanged afterwards (side files ignored); `AppDatabase.launch(paths:)` returns `failed`, verifies **AC-12**
 - Concurrency: ten concurrent `loadOrCreateLearner` calls on a fresh database return one id and leave one row, verifies **AC-4**
 - Display order: wrong set, duplicate, unknown id, and an order for a `translate` exercise are each rejected; a second save throws `displayOrderAlreadySet` and the order is unchanged, verifies **AC-9**
 - Archive: archiving twice is a no op; saving a lesson into an archived course and attempting an archived lesson throw `archived`; `addCourse` for an archived language throws `duplicateCourse` and `unarchiveCourse` restores it, verifies **AC-10**
@@ -262,7 +262,7 @@ Tracer Bullet: the thread here runs from app launch through `AppEnvironment`, th
 5. `Persistence` records and mapping (`LearnerRow`, `CourseRow`, `LessonRow`, `ExerciseRow`, `ExercisePartRow`, `AttemptRow`, `GenerationRow`) with `String` ids and millisecond rounded dates, plus the `mapError` helper, internal only, satisfies **AC-2**, **AC-3**
 6. `AppDatabase` implements `LearnerStore` (`loadOrCreateLearner`, `setDisplayName`, `addCourse`, `courses`, `observeCourses`, `archiveCourse`, `unarchiveCourse`) with the concurrent first call test, satisfies **AC-4**, **AC-5**, **AC-10**, **AC-13**
 7. `AppDatabase` implements `LessonStore` (`saveGeneratedLesson` in one transaction, `lesson`, `observeLesson`, `observeLessons`, `saveDisplayOrder`, `recordAttempt` with response validation, numbering, and state advance, `archiveLesson`), with the restart, rollback, concurrency, archive, and live read tests, satisfies **AC-2**, **AC-3**, **AC-7**, **AC-8**, **AC-9**, **AC-10**, **AC-13**, **AC-14**
-8. Backup before migrating: split migration out of `AppDatabase.init`, `AppPaths.backups`, the five step open order above (existence check, open, backup into a `DatabaseQueue`, prune by name, migrate), fail closed, with tests, satisfies **AC-11**, **AC-12**
+8. Backup before migrating: split migration out of `AppDatabase.init`, `AppPaths.backups`, the five step open order above (existence check, open, backup into a `DatabaseQueue`, prune, migrate), fail closed, with tests, satisfies **AC-11**, **AC-12**
 9. Launch wiring: `AppEnvironment.launch()` returns `LaunchResult` (ready, with `LearnerStore` and `LessonStore` exposed for feature models, or failed); `VerbaApp` switches on it; replace the `fatalError` with a `LaunchErrorView` in `Features` (message, **Show Database in Finder**, **Quit** as closures from the app target, labelled for VoiceOver, Dynamic Type), satisfies **AC-12**
 
 ## Consequences

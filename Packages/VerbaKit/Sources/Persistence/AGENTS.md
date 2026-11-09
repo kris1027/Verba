@@ -9,6 +9,7 @@ The infrastructure layer for everything the app remembers: one GRDB managed SQLi
 | File | Owns |
 |---|---|
 | `AppDatabase.swift` | Opens the `DatabasePool` (WAL), runs the `DatabaseMigrator` before any read, in memory variant for tests |
+| `DatabaseLaunch.swift` | Prepares the folders and opens the database at launch; turns any failure into the error screen's message and location |
 | `Migrations.swift` | The named migrations, with the SQL written out in full |
 | `AppDatabase+LearnerStore.swift`, `AppDatabase+LessonStore.swift` | The `Core` store protocols |
 | `Rows.swift` | Internal record structs and their mapping to `Core` values |

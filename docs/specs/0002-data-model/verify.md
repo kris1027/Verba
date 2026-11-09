@@ -34,7 +34,7 @@ _Steps derived from spec 0002 acceptance criteria. `/check verify` runs these; `
 - [x] `Generation` on a lesson → the row named by `lesson.generationId` → AC-2
 - [x] Option order on reopen → `displayPosition` once set, else `sourcePosition`; check both before and after a save → AC-2, AC-9
 - [x] Backup file name → current UTC time with no colons, even when your Mac is in another time zone; a clash adds `-2` (`aNameClashGetsASuffix`) → AC-11
-- [x] Error screen message and location → `PersistenceError.errorDescription` (or the folder error's description), and the file, or the data folder when the file is missing → AC-12
+- [x] Error screen message and location → `PersistenceError.errorDescription` (or `AppPathsError.errorDescription` for the folders), and the file, or the data folder when the file is missing → AC-12
 
 ## Acceptance criteria coverage
 - AC-1: `SchemaTests`, the `sqlite3` steps
@@ -48,6 +48,6 @@ _Steps derived from spec 0002 acceptance criteria. `/check verify` runs these; `
 - AC-9: `OptionShufflerTests`, the display order tests in `LessonStoreTests`
 - AC-10: the archive tests in `LearnerStoreTests` and `LessonStoreTests`, `aRawDeleteOfALessonWithExercisesFails`
 - AC-11: `OpenAndBackupTests`, the `ls` step
-- AC-12: `OpenAndBackupTests` for the store; the UI / manual steps for the screen, because the app target has no test target yet
+- AC-12: `OpenAndBackupTests` for the store and the ready-or-failed launch outcome, `LaunchErrorViewTests` for the screen building; the manual steps for pressing its buttons, until `AppUITests` arrives
 - AC-13: `LessonLiveReadTests`, `observeCoursesDeliversCurrentThenUpdates`
 - AC-14: `GraderTests`, `aResponseThatDoesNotFitIsRejectedAndNotSaved`
