@@ -59,7 +59,7 @@ let package = Package(
                 .product(name: "Subprocess", package: "swift-subprocess"),
             ]
         ),
-        .testTarget(name: "FeaturesTests", dependencies: ["Features"]),
+        .testTarget(name: "FeaturesTests", dependencies: ["Features", "Core"]),
     ],
     swiftLanguageModes: [.v6]
 )

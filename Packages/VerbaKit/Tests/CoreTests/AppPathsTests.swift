@@ -11,6 +11,8 @@ struct AppPathsTests {
         #expect(paths.database.deletingLastPathComponent().standardizedFileURL == root.standardizedFileURL)
         #expect(paths.claudeWork.lastPathComponent == "claude-work")
         #expect(paths.claudeWork.deletingLastPathComponent().standardizedFileURL == root.standardizedFileURL)
+        #expect(paths.backups.lastPathComponent == "backups")
+        #expect(paths.backups.deletingLastPathComponent().standardizedFileURL == root.standardizedFileURL)
     }
 
     @Test func prepareFoldersCreatesAnEmptyClaudeWorkFolder() throws {
@@ -29,5 +31,6 @@ struct AppPathsTests {
         #expect(isDirectory.boolValue)
         #expect(
             try FileManager.default.contentsOfDirectory(atPath: paths.claudeWork.path(percentEncoded: false)).isEmpty)
+        #expect(FileManager.default.fileExists(atPath: paths.backups.path(percentEncoded: false)))
     }
 }

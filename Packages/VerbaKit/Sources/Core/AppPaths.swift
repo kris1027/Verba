@@ -23,8 +23,14 @@ public struct AppPaths: Sendable, Equatable {
         root.appending(path: "claude-work", directoryHint: .isDirectory)
     }
 
-    /// Creates the root and an empty `claude-work/`. Safe to call on every launch.
+    /// Where the app keeps a copy of the database from before each migration.
+    public var backups: URL {
+        root.appending(path: "backups", directoryHint: .isDirectory)
+    }
+
+    /// Creates the root, an empty `claude-work/`, and `backups/`. Safe to call on every launch.
     public func prepareFolders() throws {
         try FileManager.default.createDirectory(at: claudeWork, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: backups, withIntermediateDirectories: true)
     }
 }
