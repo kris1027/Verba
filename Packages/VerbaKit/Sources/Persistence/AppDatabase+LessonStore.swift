@@ -13,7 +13,7 @@ extension AppDatabase: LessonStore {
                 throw StoreError.notFound
             }
             guard course.archivedAt == nil else { throw StoreError.archived }
-            try Self.insert(generation, courseId: course.id, db, now: now)
+            try GenerationRow(new: generation, courseId: course.id, createdAt: now).insert(db)
             try Self.insert(lesson, generationId: generation.id.text, db, now: now)
             guard let detail = try Self.fetchDetail(db, id: lesson.id.text) else { throw StoreError.notFound }
             return detail
@@ -71,76 +71,26 @@ extension AppDatabase: LessonStore {
                 response: attempt.response, grade: attempt.grade.rawValue, feedback: attempt.feedback,
                 gradedBy: attempt.gradedBy.rawValue, answeredAt: now)
             try row.insert(db)
-            try Self.advance(&lesson, db, answeredAt: now)
+            try lesson.advance(db, answeredAt: now)
             return try row.toCore()
         }
     }
 
     /// Hides a lesson from lists. Does nothing if it is already archived.
     public func archiveLesson(_ id: LessonID) async throws(StoreError) {
-        try await write { db, now in
-            guard var row = try LessonRow.fetchOne(db, key: id.text) else { throw StoreError.notFound }
-            guard row.archivedAt == nil else { return }
-            row.archivedAt = now
-            try row.update(db)
-        }
+        try await archive(LessonRow.self, id: id.text)
     }
 
     // MARK: Writes
 
-    private static func insert(_ generation: NewGeneration, courseId: String, _ db: Database, now: Date) throws {
-        try GenerationRow(
-            id: generation.id.text, courseId: courseId, kind: generation.kind.rawValue, model: generation.model,
-            promptVersion: generation.promptVersion, rawReply: generation.rawReply, durationMs: generation.durationMs,
-            createdAt: now
-        ).insert(db)
-    }
-
     private static func insert(_ lesson: NewLesson, generationId: String, _ db: Database, now: Date) throws {
-        try LessonRow(
-            id: lesson.id.text, courseId: lesson.courseID.text, generationId: generationId,
-            kind: lesson.kind.rawValue, title: lesson.title, topic: lesson.topic, explanation: lesson.explanation,
-            state: LessonState.ready.rawValue, createdAt: now, startedAt: nil, completedAt: nil, archivedAt: nil
-        ).insert(db)
-
+        try LessonRow(new: lesson, generationId: generationId, createdAt: now).insert(db)
         for (position, exercise) in lesson.exercises.enumerated() {
-            try ExerciseRow(
-                id: exercise.id.text, lessonId: lesson.id.text, position: position, kind: exercise.kind.rawValue,
-                prompt: exercise.prompt, explanation: exercise.explanation
-            ).insert(db)
-
+            try ExerciseRow(new: exercise, lessonId: lesson.id.text, position: position).insert(db)
             for (sourcePosition, part) in exercise.parts.enumerated() {
-                try ExercisePartRow(
-                    id: part.id.text, exerciseId: exercise.id.text, sourcePosition: sourcePosition, text: part.text,
-                    displayPosition: nil, isCorrect: part.isCorrect, correctPosition: part.correctPosition,
-                    matchKey: part.matchKey
-                ).insert(db)
+                try ExercisePartRow(new: part, exerciseId: exercise.id.text, sourcePosition: sourcePosition).insert(db)
             }
         }
-    }
-
-    /// Moves the lesson forward after an attempt. Both timestamps copy the attempt's time.
-    private static func advance(_ lesson: inout LessonRow, _ db: Database, answeredAt: Date) throws {
-        let exerciseCount = try Int.fetchOne(
-            db, sql: "SELECT COUNT(*) FROM exercise WHERE lessonId = ?", arguments: [lesson.id])
-        let answeredCount = try Int.fetchOne(
-            db,
-            sql: """
-                SELECT COUNT(DISTINCT attempt.exerciseId) FROM attempt
-                JOIN exercise ON exercise.id = attempt.exerciseId
-                WHERE exercise.lessonId = ?
-                """,
-            arguments: [lesson.id])
-
-        let current = try lesson.toCore().state
-        let next = current.advanced(exerciseCount: exerciseCount ?? 0, answeredCount: answeredCount ?? 0)
-        guard next != current else { return }
-        lesson.state = next.rawValue
-        lesson.startedAt = lesson.startedAt ?? answeredAt
-        if next == .completed {
-            lesson.completedAt = answeredAt
-        }
-        try lesson.update(db)
     }
 
     // MARK: Reads
@@ -191,14 +141,41 @@ extension AppDatabase: LessonStore {
         let attemptsByExercise = try Dictionary(grouping: attempts.map { try $0.toCore() }, by: \.exerciseID)
         let exercisesByLesson = Dictionary(grouping: exercises, by: \.lessonId)
         return try lessons.map { row in
-            let scored = try (exercisesByLesson[row.id] ?? []).map { exercise in
+            let exerciseAttempts = try (exercisesByLesson[row.id] ?? []).map { exercise in
                 let id = try ExerciseID(text: exercise.id)
                 return (id, attemptsByExercise[id] ?? [])
             }
             let lesson = try row.toCore()
             return LessonSummary(
                 id: lesson.id, title: lesson.title, topic: lesson.topic, state: lesson.state,
-                createdAt: lesson.createdAt, completedAt: lesson.completedAt, score: LessonScore(exercises: scored))
+                createdAt: lesson.createdAt, completedAt: lesson.completedAt,
+                score: LessonScore(exercises: exerciseAttempts))
         }
+    }
+}
+
+extension LessonRow {
+    /// Moves the lesson forward after an attempt. Both timestamps copy the attempt's time.
+    fileprivate mutating func advance(_ db: Database, answeredAt: Date) throws {
+        let exerciseCount = try Int.fetchOne(
+            db, sql: "SELECT COUNT(*) FROM exercise WHERE lessonId = ?", arguments: [id])
+        let answeredCount = try Int.fetchOne(
+            db,
+            sql: """
+                SELECT COUNT(DISTINCT attempt.exerciseId) FROM attempt
+                JOIN exercise ON exercise.id = attempt.exerciseId
+                WHERE exercise.lessonId = ?
+                """,
+            arguments: [id])
+
+        let current = try toCore().state
+        let next = current.advanced(exerciseCount: exerciseCount ?? 0, answeredCount: answeredCount ?? 0)
+        guard next != current else { return }
+        state = next.rawValue
+        startedAt = startedAt ?? answeredAt
+        if next == .completed {
+            completedAt = answeredAt
+        }
+        try update(db)
     }
 }

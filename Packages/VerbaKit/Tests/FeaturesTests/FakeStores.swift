@@ -16,9 +16,8 @@ actor FakeLearnerStore: LearnerStore {
 
     func setDisplayName(_ name: String?) throws(StoreError) -> Learner {
         guard let current = learner else { throw .notFound }
-        let trimmed = name?.trimmingCharacters(in: .whitespacesAndNewlines)
         let updated = Learner(
-            id: current.id, displayName: trimmed?.isEmpty == true ? nil : trimmed, createdAt: current.createdAt)
+            id: current.id, displayName: Learner.normalizedDisplayName(name), createdAt: current.createdAt)
         learner = updated
         return updated
     }

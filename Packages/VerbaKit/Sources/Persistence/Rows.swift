@@ -163,3 +163,49 @@ struct AttemptRow: Codable, FetchableRecord, PersistableRecord {
             answeredAt: answeredAt.roundedToMillisecond)
     }
 }
+
+/// A row that is hidden from lists rather than deleted.
+protocol ArchivableRow: FetchableRecord, PersistableRecord, SendableMetatype {
+    var archivedAt: Date? { get set }
+}
+
+extension CourseRow: ArchivableRow {}
+extension LessonRow: ArchivableRow {}
+
+// MARK: Mapping new Core values to rows
+
+extension GenerationRow {
+    init(new generation: NewGeneration, courseId: String, createdAt: Date) {
+        self.init(
+            id: generation.id.text, courseId: courseId, kind: generation.kind.rawValue, model: generation.model,
+            promptVersion: generation.promptVersion, rawReply: generation.rawReply, durationMs: generation.durationMs,
+            createdAt: createdAt)
+    }
+}
+
+extension LessonRow {
+    /// A new lesson starts out `ready`.
+    init(new lesson: NewLesson, generationId: String, createdAt: Date) {
+        self.init(
+            id: lesson.id.text, courseId: lesson.courseID.text, generationId: generationId,
+            kind: lesson.kind.rawValue, title: lesson.title, topic: lesson.topic, explanation: lesson.explanation,
+            state: LessonState.ready.rawValue, createdAt: createdAt, startedAt: nil, completedAt: nil, archivedAt: nil)
+    }
+}
+
+extension ExerciseRow {
+    init(new exercise: NewExercise, lessonId: String, position: Int) {
+        self.init(
+            id: exercise.id.text, lessonId: lessonId, position: position, kind: exercise.kind.rawValue,
+            prompt: exercise.prompt, explanation: exercise.explanation)
+    }
+}
+
+extension ExercisePartRow {
+    init(new part: NewExercisePart, exerciseId: String, sourcePosition: Int) {
+        self.init(
+            id: part.id.text, exerciseId: exerciseId, sourcePosition: sourcePosition, text: part.text,
+            displayPosition: nil, isCorrect: part.isCorrect, correctPosition: part.correctPosition,
+            matchKey: part.matchKey)
+    }
+}

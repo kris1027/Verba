@@ -24,6 +24,16 @@ extension AppDatabase {
         }
     }
 
+    /// Hides a row from lists. Does nothing if it is already archived.
+    func archive<Row: ArchivableRow>(_ type: Row.Type, id: String) async throws(StoreError) {
+        try await write { db, now in
+            guard var row = try Row.fetchOne(db, key: id) else { throw StoreError.notFound }
+            guard row.archivedAt == nil else { return }
+            row.archivedAt = now
+            try row.update(db)
+        }
+    }
+
     /// A stream of the current value and every later one. Finishes when `fetch` returns nil or on a database error.
     func liveStream<Value: Sendable>(
         fetch: @escaping @Sendable (Database) throws -> Value?

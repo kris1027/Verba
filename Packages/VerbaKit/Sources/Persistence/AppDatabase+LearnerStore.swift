@@ -12,8 +12,7 @@ extension AppDatabase: LearnerStore {
     public func setDisplayName(_ name: String?) async throws(StoreError) -> Learner {
         try await write { db, _ in
             guard var row = try Self.firstLearner(db) else { throw StoreError.notFound }
-            let trimmed = name?.trimmingCharacters(in: .whitespacesAndNewlines)
-            row.displayName = trimmed?.isEmpty == true ? nil : trimmed
+            row.displayName = Learner.normalizedDisplayName(name)
             try row.update(db)
             return try row.toCore()
         }
@@ -49,12 +48,7 @@ extension AppDatabase: LearnerStore {
 
     /// Hides a course from lists. Does nothing if it is already archived.
     public func archiveCourse(_ id: CourseID) async throws(StoreError) {
-        try await write { db, now in
-            guard var row = try CourseRow.fetchOne(db, key: id.text) else { throw StoreError.notFound }
-            guard row.archivedAt == nil else { return }
-            row.archivedAt = now
-            try row.update(db)
-        }
+        try await archive(CourseRow.self, id: id.text)
     }
 
     /// Brings an archived course back. Does nothing if it is not archived.

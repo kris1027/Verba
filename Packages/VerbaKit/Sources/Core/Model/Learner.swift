@@ -15,6 +15,12 @@ public struct Learner: Sendable, Hashable, Identifiable {
         self.displayName = displayName
         self.createdAt = createdAt
     }
+
+    /// The form a display name is saved in: trimmed, with an empty name becoming nil.
+    public static func normalizedDisplayName(_ name: String?) -> String? {
+        let trimmed = name?.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed?.isEmpty == true ? nil : trimmed
+    }
 }
 
 /// One language being learned, with the native language it is taught in.
