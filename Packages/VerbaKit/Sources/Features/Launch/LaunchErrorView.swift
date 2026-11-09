@@ -23,7 +23,6 @@ public struct LaunchErrorView: View {
             Button("Show Database in Finder", action: showDatabase)
                 .accessibilityHint("Opens Finder with your saved data selected.")
             Button("Quit", action: quit)
-                .keyboardShortcut(.defaultAction)
                 .accessibilityHint("Closes Verba.")
         }
         .frame(minWidth: 480, minHeight: 320)
