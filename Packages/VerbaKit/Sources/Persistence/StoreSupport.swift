@@ -58,9 +58,12 @@ extension AppDatabase {
             return mapDatabaseError(error)
         default:
             Log.store.error("Store call failed: \(String(describing: error), privacy: .private)")
-            return .unavailable(reason: error.localizedDescription)
+            return .unavailable(reason: learnerReason)
         }
     }
+
+    /// What the learner reads for a database failure. The engine's own text only goes to the log.
+    private static let learnerReason = "Try again, and restart Verba if this keeps happening."
 
     private static func mapDatabaseError(_ error: DatabaseError) -> StoreError {
         if error.extendedResultCode == .SQLITE_CONSTRAINT_FOREIGNKEY {
@@ -71,8 +74,7 @@ extension AppDatabase {
         {
             return .duplicateCourse
         }
-        let reason = error.message ?? "The database reported an error."
-        Log.store.error("Database call failed: \(reason, privacy: .private)")
-        return .unavailable(reason: reason)
+        Log.store.error("Database call failed: \(error.message ?? "no message", privacy: .private)")
+        return .unavailable(reason: learnerReason)
     }
 }

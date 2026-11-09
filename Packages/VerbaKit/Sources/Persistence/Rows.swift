@@ -24,7 +24,8 @@ extension Date {
 /// Turns a stored open set value into its enum. An unknown value is an error, never a crash.
 private func decoded<Value: RawRepresentable>(_ raw: String) throws -> Value where Value.RawValue == String {
     guard let value = Value(rawValue: raw) else {
-        throw StoreError.unavailable(reason: "A saved value isn't recognized: \(raw).")
+        Log.store.error("Unrecognized saved value: \(raw, privacy: .private)")
+        throw StoreError.unavailable(reason: "A saved value isn't recognized.")
     }
     return value
 }

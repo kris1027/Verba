@@ -47,6 +47,17 @@ struct AppDatabaseTests {
             #expect(reread == date)
         }
     }
+
+    @Test func aDatabaseFailureNeverShowsTheEnginesTextToTheLearner() {
+        let engineText = "no such table: exercisePart"
+        let mapped = AppDatabase.mapError(DatabaseError(resultCode: .SQLITE_ERROR, message: engineText))
+
+        guard case .unavailable = mapped else {
+            Issue.record("Expected unavailable, got \(mapped)")
+            return
+        }
+        #expect(mapped.errorDescription?.contains(engineText) == false)
+    }
 }
 
 /// AC-1: `v1_core` creates exactly the designed schema.
