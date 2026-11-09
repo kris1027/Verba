@@ -25,7 +25,7 @@ Every feature that creates or grades learning material follows these. `/architec
 |---|---------|-------|--------|
 | 1 | Stack & architecture | Foundation | done |
 | 2 | Coding standards & tooling | Foundation | done |
-| 3 | Data model | Foundation | in-progress |
+| 3 | Data model | Foundation | done |
 | 4 | Claude Code bridge | Foundation | planned |
 | 5 | Design system & UI foundation | Foundation | planned |
 | 6 | First lesson loop | Slice 1 | planned |
@@ -56,7 +56,7 @@ code in `.swift-format`, `.swiftlint.yml`, `.githooks/pre-commit`
 - [x] Capture conventions + tooling choices: `/audit`
 - [x] Install the tooling: `/develop tooling`
 
-### 3. Data model · in-progress
+### 3. Data model · done
 The saved shape of everything the app remembers: learner, language pairs, goal, level, lessons, exercises and answers, chat sessions, learning records, teaching preferences, review items, reference notes.
 **Done when:** every lesson, answer, chat, and score survives an app restart, and the shape already fits later slices (several languages, records, review, notebook) without a breaking migration.
 spec [0002](../specs/0002-data-model/index.md) · code in `Packages/VerbaKit/Sources/Core/`, `Packages/VerbaKit/Sources/Persistence/`, `Packages/VerbaKit/Sources/Features/Launch/`, `App/`
@@ -66,7 +66,7 @@ spec [0002](../specs/0002-data-model/index.md) · code in `Packages/VerbaKit/Sou
   - [x] `v1_core` migration with the seven Slice 1 tables, row mapping, and error mapping (AC-1, AC-2, AC-3)
   - [x] `LearnerStore` and `LessonStore` on GRDB with live streams and archive rules (AC-2, AC-3, AC-4, AC-7, AC-8, AC-9, AC-10, AC-13, AC-14)
   - [x] Backup before migrating and the launch error screen instead of a crash (AC-11, AC-12)
-- [ ] Verify it: `/check verify data model`
+- [x] Verify it: `/check verify data model`
 
 ### 4. Claude Code bridge · needs a decision
 The one place the app talks to Claude, by running the local Claude Code CLI: sending prompts with the right learner context, getting structured lesson data back, streaming chat replies, and handling failures.

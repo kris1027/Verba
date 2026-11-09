@@ -1,7 +1,7 @@
 # 0002. One relational schema for everything the app remembers, grown slice by slice
 
 **Date**: 2026-11-05
-**Status**: In Progress
+**Status**: Accepted
 
 ## Summary
 
