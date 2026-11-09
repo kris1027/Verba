@@ -263,6 +263,20 @@ struct OpenAndBackupTests {
         }
     }
 
+    @Test func pruningRanksBackupsFromTheSameSecondByTheirClashNumber() async throws {
+        try await withTemporaryPaths { paths in
+            let stamp = "verba-2027-01-15T08-00-00Z"
+            let names = ["", "-2", "-3", "-10"].map { "\(stamp)\($0).sqlite" }
+            for name in names {
+                try Data().write(to: paths.backups.appending(path: name))
+            }
+
+            BackupFolder(url: paths.backups).prune()
+
+            #expect(try Set(paths.backupNames()) == Set(names.dropFirst()))
+        }
+    }
+
     @Test func aNameClashGetsASuffix() async throws {
         try await withTemporaryPaths { paths in
             let folder = BackupFolder(url: paths.backups)

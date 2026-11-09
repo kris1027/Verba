@@ -49,13 +49,22 @@ struct BackupFolder {
         do {
             let backups = try fileManager.contentsOfDirectory(atPath: url.path(percentEncoded: false))
                 .filter { $0.hasPrefix(Self.prefix) && $0.hasSuffix(Self.suffix) }
-                .sorted(by: >)
+                .sorted { Self.recency($0) > Self.recency($1) }
             for name in backups.dropFirst(Self.keptCount) {
                 try fileManager.removeItem(at: url.appending(path: name, directoryHint: .notDirectory))
             }
         } catch {
             Log.store.error("Pruning backups failed: \(String(describing: error), privacy: .public)")
         }
+    }
+
+    /// A backup's timestamp and clash number, compared so `…Z`, `…Z-2`, `…Z-10` rank oldest to newest.
+    private static func recency(_ name: String) -> (stamp: String, attempt: Int) {
+        let stem = name.dropFirst(prefix.count).dropLast(suffix.count)
+        guard let marker = stem.range(of: "Z-"), let attempt = Int(stem[marker.upperBound...]) else {
+            return (String(stem), 1)
+        }
+        return (String(stem[..<stem.index(before: marker.upperBound)]), attempt)
     }
 
     private func removePartialFile(atPath path: String) {
