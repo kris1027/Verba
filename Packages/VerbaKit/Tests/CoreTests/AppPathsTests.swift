@@ -33,4 +33,15 @@ struct AppPathsTests {
             try FileManager.default.contentsOfDirectory(atPath: paths.claudeWork.path(percentEncoded: false)).isEmpty)
         #expect(FileManager.default.fileExists(atPath: paths.backups.path(percentEncoded: false)))
     }
+
+    @Test func prepareFoldersThrowsATypedErrorWhenTheRootIsAFile() throws {
+        let root = FileManager.default.temporaryDirectory
+            .appending(path: "AppPathsTests-\(UUID().uuidString)", directoryHint: .notDirectory)
+        defer { try? FileManager.default.removeItem(at: root) }
+        try Data("not a folder".utf8).write(to: root)
+
+        #expect(throws: AppPathsError.foldersUnavailable) {
+            try AppPaths(root: root).prepareFolders()
+        }
+    }
 }

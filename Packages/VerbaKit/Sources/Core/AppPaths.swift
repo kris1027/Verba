@@ -29,8 +29,29 @@ public struct AppPaths: Sendable, Equatable {
     }
 
     /// Creates the root, an empty `claude-work/`, and `backups/`. Safe to call on every launch.
-    public func prepareFolders() throws {
-        try FileManager.default.createDirectory(at: claudeWork, withIntermediateDirectories: true)
-        try FileManager.default.createDirectory(at: backups, withIntermediateDirectories: true)
+    /// - Throws: `AppPathsError.foldersUnavailable` when a folder can't be created.
+    public func prepareFolders() throws(AppPathsError) {
+        do {
+            try FileManager.default.createDirectory(at: claudeWork, withIntermediateDirectories: true)
+            try FileManager.default.createDirectory(at: backups, withIntermediateDirectories: true)
+        } catch {
+            Log.app.error("Creating the data folders failed: \(String(describing: error), privacy: .private)")
+            throw .foldersUnavailable
+        }
+    }
+}
+
+/// The app's folders could not be made ready.
+public enum AppPathsError: Error, Sendable, Hashable, LocalizedError {
+    /// A folder could not be created, for example because the disk is full.
+    case foldersUnavailable
+
+    /// A message to show the learner.
+    public var errorDescription: String? {
+        switch self {
+        case .foldersUnavailable:
+            "Verba couldn't create the folders it keeps your data in. "
+                + "Check that your disk has free space, then open Verba again."
+        }
     }
 }
