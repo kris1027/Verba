@@ -77,8 +77,26 @@ actor FakeLearnerStore: LearnerStore {
 actor FakeLessonStore: LessonStore {
     private var details: [LessonID: LessonDetail] = [:]
     private var detailObservers: [LessonID: [AsyncStream<LessonDetail>.Continuation]] = [:]
+    private var listObservers: [CourseID: [AsyncStream<[LessonSummary]>.Continuation]] = [:]
+    private let courses: FakeLearnerStore
 
-    func saveGeneratedLesson(_ lesson: NewLesson, generation: NewGeneration) -> LessonDetail {
+    /// Lessons belong to courses, so the fake checks them against a learner store as the real one does.
+    init(courses: FakeLearnerStore) {
+        self.courses = courses
+    }
+
+    func saveGeneratedLesson(
+        _ lesson: NewLesson, generation: NewGeneration
+    ) async throws(StoreError) -> LessonDetail {
+        do {
+            try lesson.validate()
+        } catch {
+            throw .invalid(error)
+        }
+        guard let course = await courses.courses(includeArchived: true).first(where: { $0.id == lesson.courseID })
+        else { throw .notFound }
+        guard course.archivedAt == nil else { throw .archived }
+
         let now = Date.now
         let exercises = lesson.exercises.enumerated().map { position, new in
             ExerciseDetail(
@@ -102,7 +120,7 @@ actor FakeLessonStore: LessonStore {
                 promptVersion: generation.promptVersion, rawReply: generation.rawReply,
                 durationMs: generation.durationMs, createdAt: now),
             exercises: exercises)
-        details[lesson.id] = detail
+        publish(detail)
         return detail
     }
 
@@ -123,7 +141,15 @@ actor FakeLessonStore: LessonStore {
     }
 
     func observeLessons(course: CourseID) -> AsyncStream<[LessonSummary]> {
-        let summaries = details.values
+        let (stream, continuation) = AsyncStream.makeStream(
+            of: [LessonSummary].self, bufferingPolicy: .bufferingNewest(1))
+        listObservers[course, default: []].append(continuation)
+        continuation.yield(summaries(course: course))
+        return stream
+    }
+
+    private func summaries(course: CourseID) -> [LessonSummary] {
+        details.values
             .filter { $0.lesson.courseID == course && $0.lesson.archivedAt == nil }
             .sorted { $0.lesson.createdAt > $1.lesson.createdAt }
             .map {
@@ -131,9 +157,6 @@ actor FakeLessonStore: LessonStore {
                     id: $0.id, title: $0.lesson.title, topic: $0.lesson.topic, state: $0.lesson.state,
                     createdAt: $0.lesson.createdAt, completedAt: $0.lesson.completedAt, score: $0.score)
             }
-        let (stream, continuation) = AsyncStream.makeStream(of: [LessonSummary].self)
-        continuation.yield(summaries)
-        return stream
     }
 
     func saveDisplayOrder(_ order: [ExercisePartID], for exercise: ExerciseID) throws(StoreError) {
@@ -211,5 +234,8 @@ actor FakeLessonStore: LessonStore {
     private func publish(_ detail: LessonDetail) {
         details[detail.id] = detail
         detailObservers[detail.id]?.forEach { $0.yield(detail) }
+        let courseID = detail.lesson.courseID
+        let current = summaries(course: courseID)
+        listObservers[courseID]?.forEach { $0.yield(current) }
     }
 }
