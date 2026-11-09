@@ -69,11 +69,6 @@ extension AppDatabase {
         if error.extendedResultCode == .SQLITE_CONSTRAINT_FOREIGNKEY {
             return .notFound
         }
-        if error.extendedResultCode == .SQLITE_CONSTRAINT_UNIQUE,
-            error.message?.contains("course.learnerId, course.targetLanguage") == true
-        {
-            return .duplicateCourse
-        }
         Log.store.error("Database call failed: \(error.message ?? "no message", privacy: .private)")
         return .unavailable(reason: learnerReason)
     }

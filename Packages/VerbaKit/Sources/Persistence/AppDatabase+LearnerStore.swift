@@ -27,7 +27,12 @@ extension AppDatabase: LearnerStore {
             let row = CourseRow(
                 id: CourseID().text, learnerId: learner.id, targetLanguage: target.rawValue,
                 nativeLanguage: native.rawValue, createdAt: now, archivedAt: nil)
-            try row.insert(db)
+            do {
+                try row.insert(db)
+            } catch let error as DatabaseError where error.extendedResultCode == .SQLITE_CONSTRAINT_UNIQUE {
+                // The id is freshly generated, so only the one course per language index can reject this row.
+                throw StoreError.duplicateCourse
+            }
             return try row.toCore()
         }
     }
