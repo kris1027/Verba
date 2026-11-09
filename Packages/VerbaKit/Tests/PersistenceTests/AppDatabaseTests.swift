@@ -328,6 +328,43 @@ struct OpenAndBackupTests {
         }
     }
 
+    @Test func launchingAHealthyFolderIsReady() async throws {
+        try await withTemporaryPaths { paths in
+            guard case .ready = AppDatabase.launch(paths: paths) else {
+                Issue.record("Expected ready")
+                return
+            }
+        }
+    }
+
+    @Test func launchingACorruptFileFailsWithItsMessageAndPointsAtTheFile() async throws {
+        try await withTemporaryPaths { paths in
+            try Data((0..<8192).map { _ in UInt8.random(in: 0...255) }).write(to: paths.database)
+
+            guard case .failed(let message, let databaseURL) = AppDatabase.launch(paths: paths) else {
+                Issue.record("Expected failed")
+                return
+            }
+            #expect(message == Persistence.PersistenceError.openFailed.errorDescription)
+            #expect(databaseURL == paths.database)
+        }
+    }
+
+    @Test func launchingWhenFoldersCantBeMadeFailsAndPointsAtTheDataFolder() async throws {
+        try await withTemporaryPaths { paths in
+            let blocked = paths.root.appending(path: "blocked", directoryHint: .notDirectory)
+            try Data("not a folder".utf8).write(to: blocked)
+            let blockedPaths = AppPaths(root: blocked)
+
+            guard case .failed(let message, let databaseURL) = AppDatabase.launch(paths: blockedPaths) else {
+                Issue.record("Expected failed")
+                return
+            }
+            #expect(message == AppPathsError.foldersUnavailable.errorDescription)
+            #expect(databaseURL == blocked)
+        }
+    }
+
     @Test(arguments: [Persistence.PersistenceError.openFailed, .backupFailed, .migrationFailed])
     func everyErrorHasAMessage(error: Persistence.PersistenceError) {
         #expect(error.errorDescription?.isEmpty == false)

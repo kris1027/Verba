@@ -26,15 +26,12 @@ final class AppEnvironment {
     /// it has migrations to apply. A failure becomes `failed`, which shows the error screen.
     static func launch() -> LaunchResult {
         let paths = AppPaths(root: dataRoot)
-        do {
-            try paths.prepareFolders()
-            let database = try AppDatabase.open(at: paths.database, backupsFolder: paths.backups)
+        switch AppDatabase.launch(paths: paths) {
+        case .ready(let database):
             Log.app.info("Data folder ready at \(paths.root.path(percentEncoded: false), privacy: .private)")
             return .ready(AppEnvironment(paths: paths, database: database))
-        } catch {
-            Log.app.fault("Launch failed: \(String(describing: error), privacy: .public)")
-            let fileExists = FileManager.default.fileExists(atPath: paths.database.path(percentEncoded: false))
-            return .failed(message: error.localizedDescription, databaseURL: fileExists ? paths.database : paths.root)
+        case .failed(let message, let databaseURL):
+            return .failed(message: message, databaseURL: databaseURL)
         }
     }
 
