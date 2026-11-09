@@ -2,39 +2,58 @@ import Core
 import Foundation
 import GRDB
 
-/// The one database the app opens. It runs every migration before any
-/// screen reads, and it is the only writer.
+/// The one database the app opens, and the only writer. `open` applies every migration before any screen reads.
 public struct AppDatabase: Sendable {
     /// Kept internal so GRDB types never leave this module.
     let writer: any DatabaseWriter
 
-    init(_ writer: any DatabaseWriter) throws {
+    init(_ writer: any DatabaseWriter) {
         self.writer = writer
-        try Self.migrator.migrate(writer)
     }
 
-    /// Opens (or creates) the database file as a `DatabasePool` in WAL mode.
-    public static func open(at url: URL) throws -> AppDatabase {
-        let pool = try DatabasePool(path: url.path(percentEncoded: false))
-        let database = try AppDatabase(pool)
+    /// Opens (or creates) the database file as a `DatabasePool` in WAL mode, copying it to
+    /// `backupsFolder` first when an existing file has migrations to apply.
+    /// - Throws: `PersistenceError`; on any failure the file keeps its last good migration.
+    public static func open(at url: URL, backupsFolder: URL) throws(PersistenceError) -> AppDatabase {
+        try open(at: url, backupsFolder: backupsFolder, migrator: migrator)
+    }
+
+    /// `open` with a chosen migrator, so tests can run a migration that fails.
+    static func open(
+        at url: URL, backupsFolder: URL, migrator: DatabaseMigrator
+    ) throws(PersistenceError) -> AppDatabase {
+        let path = url.path(percentEncoded: false)
+        let fileExisted = FileManager.default.fileExists(atPath: path)
+
+        let pool: DatabasePool
+        let hasPendingMigrations: Bool
+        do {
+            pool = try DatabasePool(path: path)
+            hasPendingMigrations = try fileExisted && pool.read { try !migrator.hasCompletedMigrations($0) }
+        } catch {
+            Log.store.error("Database open failed: \(String(describing: error), privacy: .public)")
+            throw .openFailed
+        }
+
+        if hasPendingMigrations {
+            try BackupFolder(url: backupsFolder).writeBackup(of: pool)
+        }
+        BackupFolder(url: backupsFolder).prune()
+
+        do {
+            try migrator.migrate(pool)
+        } catch {
+            Log.store.error("Migration failed: \(String(describing: error), privacy: .public)")
+            throw .migrationFailed
+        }
         Log.store.info("Database open, migrations applied")
-        return database
+        return AppDatabase(pool)
     }
 
     /// An in memory database with the same migrations, for tests.
     public static func inMemory() throws -> AppDatabase {
-        try AppDatabase(DatabaseQueue())
-    }
-
-    /// Migrations only move forward: each schema change is a new, named
-    /// migration, and an applied migration is never edited.
-    static var migrator: DatabaseMigrator {
-        var migrator = DatabaseMigrator()
-
-        // Permanent no op so the file exists with a migration history.
-        // The data model (spec 3) appends its migrations after this one.
-        migrator.registerMigration("v0_scaffold") { _ in }
-
-        return migrator
+        let queue = try DatabaseQueue()
+        try migrator.migrate(queue)
+        return AppDatabase(queue)
     }
 }
