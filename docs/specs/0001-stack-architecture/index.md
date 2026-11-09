@@ -1,7 +1,7 @@
 # 0001. Native SwiftUI app on GRDB with a local Claude Code bridge
 
 **Date**: 2026-11-05
-**Status**: In Progress
+**Status**: Accepted
 
 ## Summary
 
