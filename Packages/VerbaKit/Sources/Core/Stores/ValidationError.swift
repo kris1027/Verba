@@ -14,6 +14,8 @@ public enum ValidationError: Error, Sendable, Hashable, LocalizedError {
     case invalidDisplayOrder
     /// A response does not fit the exercise.
     case invalidResponse
+    /// A topic hint is longer than 200 characters or has a line break.
+    case invalidTopicHint
 
     /// A message to show the learner.
     public var errorDescription: String? {
@@ -24,6 +26,7 @@ public enum ValidationError: Error, Sendable, Hashable, LocalizedError {
         case .invalidExercise(let position, let reason): "Exercise \(position + 1) can't be used. \(reason)"
         case .invalidDisplayOrder: "The order of this exercise's options isn't valid."
         case .invalidResponse: "That answer doesn't fit this exercise."
+        case .invalidTopicHint: "A topic hint must be one line of 200 characters or fewer."
         }
     }
 }
