@@ -27,7 +27,7 @@ Every feature that creates or grades learning material follows these. `/architec
 | 2 | Coding standards & tooling | Foundation | done |
 | 3 | Data model | Foundation | done |
 | 4 | Claude Code bridge | Foundation | done |
-| 5 | Design system & UI foundation | Foundation | planned |
+| 5 | Design system & UI foundation | Foundation | in-progress |
 | 6 | First lesson loop | Slice 1 | planned |
 | 7 | Learning goal | Slice 2 | planned |
 | 8 | Placement check & levels | Slice 2 | planned |
@@ -80,10 +80,17 @@ spec [0003](../specs/0003-claude-code-bridge/index.md) · code in `Packages/Verb
   - [x] Lesson call: lesson-v1 prompt, schema, mapping, retry, and the opt in live tests (AC-5, AC-6, AC-7, AC-8, AC-10, AC-13, AC-16)
 - [x] Verify it: `/check verify claude code bridge`
 
-### 5. Design system & UI foundation · needs a decision
+### 5. Design system & UI foundation · in-progress
 Calm, readable, book like visual language and base components (lesson page, exercise with instant feedback, quiz with shuffled options, chat bubble, progress view) so every screen feels like one course.
 **Done when:** `design.md` covers type, color, spacing, and components, with light and dark mode; base components handle focus and keyboard; lesson pages print cleanly.
-- [ ] Design it (spec): `/architect design system & UI foundation`
+spec [0004](../specs/0004-design-system/index.md) · code in `Packages/VerbaKit/Sources/DesignSystem/`
+- [x] Design it (spec): `/architect design system & UI foundation`
+- [ ] Build it: `/develop design system & UI foundation`
+  - [x] DesignSystem target, lint boundary, forced dark, palettes with the contrast test, and the debug Design Gallery (AC-1, AC-2, AC-3, AC-13)
+  - [x] Type, spacing, focus and motion tokens, plus text size commands (AC-4, AC-5, AC-11)
+  - [ ] Lesson page, Markdown renderer, all five exercise kinds, and inline feedback with keyboard and VoiceOver (AC-6, AC-7, AC-8, AC-9, AC-10, AC-15)
+  - [ ] Light print style with ⌘P, and `design.md` with its sync test (AC-12, AC-14)
+- [ ] Verify it: `/check verify design system & UI foundation`
 
 ## Slice 1: First lesson loop
 
