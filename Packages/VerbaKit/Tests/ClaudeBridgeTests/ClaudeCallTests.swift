@@ -28,6 +28,17 @@ struct IsolationTests {
         #expect(command.timeLimit == .seconds(120))
     }
 
+    @Test func workFolderCheckReportsLeftoverItemsAndAMissingFolder() async throws {
+        let harness = try BridgeHarness()
+        let cli = harness.cli
+        #expect(!FileManager.default.fileExists(atPath: harness.paths.claudeWork.path))
+        #expect(cli.checkWorkFolder() == .unreadable)
+        try harness.paths.prepareFolders()
+        #expect(cli.checkWorkFolder() == .empty)
+        try Data().write(to: harness.paths.claudeWork.appending(path: "leak.txt"))
+        #expect(cli.checkWorkFolder() == .holds(items: 1))
+    }
+
     @Test func pathStartsWithTheBinaryFolderThenHomebrewWhenNoShellLookupRan() async throws {
         let harness = try BridgeHarness(environment: ["PATH": "/usr/bin:/opt/homebrew/bin:/bin"])
         let env = harness.cli.childEnvironment(for: CLILocation(url: harness.binary, loginPATH: nil))

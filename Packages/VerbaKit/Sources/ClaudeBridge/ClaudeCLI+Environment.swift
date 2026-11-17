@@ -36,11 +36,33 @@ extension ClaudeCLI {
         }
     }
 
-    /// The bridge never deletes anything there; it only reports that the isolation leaked.
+    /// What `claude-work/` held after a call.
+    enum WorkFolderCheck: Sendable, Hashable {
+        case empty
+        case holds(items: Int)
+        case unreadable
+    }
+
+    /// Looks into `claude-work/`. The bridge never deletes anything there.
+    nonisolated func checkWorkFolder() -> WorkFolderCheck {
+        do {
+            let contents = try FileManager.default.contentsOfDirectory(
+                atPath: paths.claudeWork.path(percentEncoded: false))
+            return contents.isEmpty ? .empty : .holds(items: contents.count)
+        } catch {
+            return .unreadable
+        }
+    }
+
+    /// AC-5: after every call, however it ended, reports that the isolation leaked.
     nonisolated func warnIfWorkFolderIsNotEmpty() {
-        let contents = (try? FileManager.default.contentsOfDirectory(atPath: paths.claudeWork.path)) ?? []
-        if !contents.isEmpty {
-            Log.bridge.warning("claude-work holds \(contents.count, privacy: .public) item(s) after a call")
+        switch checkWorkFolder() {
+        case .empty:
+            break
+        case .holds(let items):
+            Log.bridge.warning("claude-work holds \(items, privacy: .public) item(s) after a call")
+        case .unreadable:
+            Log.bridge.warning("claude-work could not be read after a call")
         }
     }
 }

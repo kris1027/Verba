@@ -167,9 +167,16 @@ public actor ClaudeCLI: ClaudeConnection, LessonWriter {
 
         let clock = ContinuousClock()
         let start = clock.now
+        let run: Result<CommandOutput, CommandError>
+        do {
+            run = .success(try await runner.run(command))
+        } catch {
+            run = .failure(error)
+        }
+        warnIfWorkFolderIsNotEmpty()
         let output: CommandOutput
         do {
-            output = try await runner.run(command)
+            output = try run.get()
         } catch {
             switch error {
             case .cancelled:
@@ -193,8 +200,6 @@ public actor ClaudeCLI: ClaudeConnection, LessonWriter {
     ) async throws(ClaudeError) -> CLIResult {
         Log.bridge.info(
             "claude exited with status \(output.exitStatus, privacy: .public) after \(durationMs, privacy: .public) ms")
-        warnIfWorkFolderIsNotEmpty()
-
         guard !output.stdoutTruncated else {
             throw await failure(
                 "stdout was over its size limit", stderr: output.stderrText, usedGeneration: usedGeneration)
