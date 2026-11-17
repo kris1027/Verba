@@ -135,6 +135,7 @@ These are described here so later slices match; they are built with their featur
 | Key | Where | Does |
 |---|---|---|
 | 1 to 9 | choice list | picks that option |
+| Up, Down | choice list | moves the selection one row |
 | Up, Down | choice list | moves the selection |
 | Return | any exercise | Check, then Next; Try Again after a failed check |
 | Option Return | translate field | inserts a line break |
