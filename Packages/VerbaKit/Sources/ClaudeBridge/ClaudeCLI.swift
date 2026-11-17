@@ -27,6 +27,8 @@ public actor ClaudeCLI: ClaudeConnection, LessonWriter {
     private var cached: ResolvedCLI?
     private var inFlight: Task<Result<ResolvedCLI, ClaudeError>, Never>?
     private var generation = 0
+    /// The generation the last AC-11 re-check started, so concurrent failures share it.
+    private var failureRecheckGeneration = -1
 
     /// A ready `claude`: where it is, its version, and the login shell `PATH` if the shell found it.
     struct ResolvedCLI: Sendable, Hashable {
@@ -230,8 +232,12 @@ public actor ClaudeCLI: ClaudeConnection, LessonWriter {
         if !stderr.isEmpty {
             Log.bridge.error("claude stderr: \(stderr, privacy: .private)")
         }
-        // A concurrent failure that already cleared the cache has started the check this one shares.
-        if usedGeneration == generation { invalidate() }
+        // A failure that cleared the cache after this call began started the check this one shares.
+        // Any other change (Check again, a new path) is not a re-check for this failure, so clear again.
+        if failureRecheckGeneration <= usedGeneration {
+            invalidate()
+            failureRecheckGeneration = generation
+        }
         switch await resolve() {
         case .failure(let problem): return problem
         case .success: return .failed(reason: reason)

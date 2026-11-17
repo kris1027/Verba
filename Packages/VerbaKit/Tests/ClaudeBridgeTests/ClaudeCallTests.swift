@@ -235,6 +235,20 @@ struct FailureClassificationTests {
         #expect(await harness.runner.promptRuns == 2)
         #expect(await harness.runner.versionChecks == 2)
     }
+
+    @Test func failureAfterACheckAgainDuringTheCallStillRechecks() async throws {
+        let harness = try BridgeHarness()
+        let request = try harness.request()
+        let cli = harness.cli
+        await harness.runner.set(replies: [CLIOutput.raw("", exit: 1)], promptDelay: .milliseconds(300))
+        async let call = outcome { () async throws(ClaudeError) in try await cli.writeLesson(request) }
+        while await harness.runner.promptRuns == 0 { await Task.yield() }
+        // Check again while the call runs: the cache holds a fresh `ready`, then the learner signs out.
+        _ = await cli.status(refresh: true)
+        await harness.runner.set(auth: #"{"loggedIn": false}"#)
+        #expect(await call.failure == .notLoggedIn)
+        #expect(await harness.runner.versionChecks == 3)
+    }
 }
 
 struct TestPromptTests {
