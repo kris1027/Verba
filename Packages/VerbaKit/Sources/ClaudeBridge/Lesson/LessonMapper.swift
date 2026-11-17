@@ -16,12 +16,12 @@ enum LessonMapper {
         _ result: CLIResult, request: LessonRequest, prompt: Prompt, durationMs: Int
     ) -> Result<MappedLesson, ReplyProblem> {
         Result { () throws(ReplyProblem) -> MappedLesson in
-            guard let structured = result.structuredOutput else { throw ReplyProblem("no structured_output") }
+            guard let structured = result.structuredOutput else { throw .noStructuredOutput }
             let reply: LessonReply
             do {
                 reply = try structured.decode(LessonReply.self)
             } catch {
-                throw ReplyProblem("does not decode: \(error)")
+                throw .doesNotDecode(detail: String(describing: error))
             }
             let lesson = try makeLesson(reply, courseID: request.courseID)
             let generation = NewGeneration(
@@ -38,7 +38,7 @@ enum LessonMapper {
         try requireText(reply.topic, "topic", limit: Limits.topic)
         try requireText(reply.explanation, "explanation", limit: Limits.explanation)
         guard Limits.exercises.contains(reply.exercises.count) else {
-            throw ReplyProblem("has \(reply.exercises.count) exercises, not 4 to 6")
+            throw .wrongExerciseCount(reply.exercises.count)
         }
         var exercises: [NewExercise] = []
         for (position, exercise) in reply.exercises.enumerated() {
@@ -49,7 +49,7 @@ enum LessonMapper {
                 courseID: courseID, kind: .regular, title: reply.title, topic: reply.topic,
                 explanation: reply.explanation, exercises: exercises)
         } catch {
-            throw ReplyProblem("fails validation: \(error.errorDescription ?? String(describing: error))")
+            throw .failsValidation(error)
         }
     }
 
@@ -59,10 +59,10 @@ enum LessonMapper {
         let label = "exercise \(position)"
         try requireText(exercise.prompt, "\(label) prompt", limit: Limits.prompt)
         guard exercise.explanation.count <= Limits.exerciseExplanation else {
-            throw ReplyProblem("\(label) explanation is over \(Limits.exerciseExplanation) characters")
+            throw .textTooLong(field: "\(label) explanation", limit: Limits.exerciseExplanation)
         }
         let explanation = exercise.explanation.trimmingCharacters(in: .whitespacesAndNewlines)
-        let parts = try makeParts(exercise, label: label)
+        let parts = try makeParts(exercise, position: position)
         return NewExercise(
             kind: coreKind(exercise.kind), prompt: exercise.prompt,
             explanation: explanation.isEmpty ? nil : explanation,
@@ -70,34 +70,36 @@ enum LessonMapper {
     }
 
     private static func makeParts(
-        _ exercise: LessonReply.Exercise, label: String
+        _ exercise: LessonReply.Exercise, position: Int
     ) throws(ReplyProblem) -> [NewExercisePart] {
+        let label = "exercise \(position)"
         switch exercise.kind {
         case .choice:
-            let choices = try require(exercise.choices, "choices", label)
+            let choices = try require(exercise.choices, "choices", position)
             guard Limits.choices.contains(choices.count) else {
-                throw ReplyProblem("\(label) has \(choices.count) options, not 3 or 4")
+                throw .wrongOptionCount(choices.count, exercise: position)
             }
             guard choices.count(where: \.isCorrect) == 1 else {
-                throw ReplyProblem("\(label) does not have exactly one correct option")
+                throw .notOneCorrectOption(exercise: position)
             }
             return try choices.map { choice throws(ReplyProblem) in
                 try requireText(choice.text, "\(label) option", limit: Limits.part)
                 return NewExercisePart(text: choice.text, isCorrect: choice.isCorrect)
             }
         case .fillBlank:
-            return try require(exercise.answers, "answers", label).map { answer throws(ReplyProblem) in
+            return try require(exercise.answers, "answers", position).map { answer throws(ReplyProblem) in
                 try requireText(answer, "\(label) answer", limit: Limits.part)
                 return NewExercisePart(text: answer, isCorrect: true)
             }
         case .reorder:
-            return try require(exercise.tokens, "tokens", label).enumerated().map { index, token throws(ReplyProblem) in
+            return try require(exercise.tokens, "tokens", position).enumerated().map {
+                index, token throws(ReplyProblem) in
                 try requireText(token, "\(label) token", limit: Limits.part)
                 return NewExercisePart(text: token, correctPosition: index)
             }
         case .match:
             var parts: [NewExercisePart] = []
-            for (index, pair) in try require(exercise.pairs, "pairs", label).enumerated() {
+            for (index, pair) in try require(exercise.pairs, "pairs", position).enumerated() {
                 try requireText(pair.left, "\(label) pair", limit: Limits.part)
                 try requireText(pair.right, "\(label) pair", limit: Limits.part)
                 parts.append(NewExercisePart(text: pair.left, matchKey: "p\(index)"))
@@ -126,15 +128,15 @@ enum LessonMapper {
         }
     }
 
-    private static func require<T>(_ value: T?, _ field: String, _ label: String) throws(ReplyProblem) -> T {
-        guard let value else { throw ReplyProblem("\(label) has no \(field)") }
+    private static func require<T>(_ value: T?, _ field: String, _ position: Int) throws(ReplyProblem) -> T {
+        guard let value else { throw .missingField(field, exercise: position) }
         return value
     }
 
     private static func requireText(_ text: String, _ field: String, limit: Int) throws(ReplyProblem) {
         guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-            throw ReplyProblem("\(field) is empty")
+            throw .emptyText(field: field)
         }
-        guard text.count <= limit else { throw ReplyProblem("\(field) is over \(limit) characters") }
+        guard text.count <= limit else { throw .textTooLong(field: field, limit: limit) }
     }
 }

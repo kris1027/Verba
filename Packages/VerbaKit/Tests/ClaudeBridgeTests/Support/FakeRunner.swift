@@ -30,7 +30,8 @@ actor FakeRunner: CommandRunner {
             withUnsafeCurrentTask { $0?.cancel() }
         }
         try? await Task.sleep(for: promptDelay)
-        let next = replies.count > 1 ? replies.removeFirst() : replies.first ?? .failure(.launchFailed("no reply"))
+        let next =
+            replies.count > 1 ? replies.removeFirst() : replies.first ?? .failure(.launchFailed(detail: "no reply"))
         return try next.get()
     }
 

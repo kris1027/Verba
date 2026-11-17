@@ -90,7 +90,7 @@ struct SubprocessRunner: CommandRunner {
                     }
                     try await writer.finish()
                 } catch {
-                    inputFailure = "Writing standard input failed: \(error)"
+                    inputFailure = String(describing: error)
                     try? await writer.finish()
                 }
                 let collected = try await (stdout, stderr)
@@ -98,14 +98,14 @@ struct SubprocessRunner: CommandRunner {
             }
             if Task.isCancelled { return .failure(.cancelled) }
             let (stdout, stderr, inputFailure) = result.closureResult
-            if let inputFailure { return .failure(.launchFailed(inputFailure)) }
+            if let inputFailure { return .failure(.inputNotWritten(detail: inputFailure)) }
             return .success(
                 CommandOutput(
                     stdout: stdout.data, stderr: stderr.data, exitStatus: Self.exitStatus(result.terminationStatus),
                     stdoutTruncated: stdout.truncated))
         } catch {
             if Task.isCancelled { return .failure(.cancelled) }
-            return .failure(.launchFailed(String(describing: error)))
+            return .failure(.launchFailed(detail: String(describing: error)))
         }
     }
 

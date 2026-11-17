@@ -198,7 +198,7 @@ struct FailureClassificationTests {
         CLIOutput.raw("[1, 2]"),
         CLIOutput.raw("{\"type\":\"assistant\"}"),
         .success(CommandOutput(stdout: Data("{}".utf8), stderr: Data([0xFF, 0xFE]), stdoutTruncated: true)),
-        .failure(.launchFailed("spawn failed")),
+        .failure(.launchFailed(detail: "spawn failed")),
         CLIOutput.result(structured: SampleLesson.reply(), exit: 2),
     ])
     func otherFailuresRecheckOnceThenGiveFailed(reply: Result<CommandOutput, CommandError>) async throws {

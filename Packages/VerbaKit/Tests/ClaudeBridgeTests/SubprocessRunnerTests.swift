@@ -83,8 +83,8 @@ struct SubprocessRunnerTests {
             let output = try await runner.run(command(quick, stdin: large))
             #expect(output.exitStatus == 0)
         } catch let error {
-            guard case .launchFailed = error else {
-                Issue.record("Expected a launch failure, got \(error)")
+            guard case .inputNotWritten = error else {
+                Issue.record("Expected an input failure, got \(error)")
                 return
             }
         }

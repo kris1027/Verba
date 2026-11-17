@@ -80,6 +80,13 @@ struct ClaudeErrorTests {
         #expect(!others.contains(message))
     }
 
+    @Test(arguments: allCases)
+    func caseNameIsTheBareCaseWithNoValues(error: ClaudeError) {
+        let expected = String(describing: error).prefix { $0 != "(" }
+        #expect(error.caseName == String(expected))
+        #expect(!error.caseName.contains("secret reason"))
+    }
+
     @Test func messagesCarryTheirValues() {
         let old = ClaudeError.versionTooOld(found: "2.0.1", minimum: "2.1.325").errorDescription ?? ""
         #expect(old.contains("2.0.1") && old.contains("2.1.325"))

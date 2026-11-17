@@ -43,12 +43,24 @@ struct CommandOutput: Sendable, Hashable {
 
 /// Why a program could not be run to its end.
 enum CommandError: Error, Sendable, Hashable {
-    /// The program could not be started, or its input could not be written.
-    case launchFailed(String)
+    /// The program could not be started. The detail may hold its path, so it is logged privately.
+    case launchFailed(detail: String)
+    /// The program started, but its standard input could not be written.
+    case inputNotWritten(detail: String)
     /// The time limit ran out and the program was stopped.
     case timedOut
     /// The calling task was cancelled and the program was stopped.
     case cancelled
+
+    /// The case name alone, safe to log as public.
+    var caseName: String {
+        switch self {
+        case .launchFailed: "launchFailed"
+        case .inputNotWritten: "inputNotWritten"
+        case .timedOut: "timedOut"
+        case .cancelled: "cancelled"
+        }
+    }
 }
 
 /// The seam between the bridge and real processes, so tests can return canned output.

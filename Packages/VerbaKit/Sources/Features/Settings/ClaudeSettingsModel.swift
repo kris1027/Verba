@@ -93,7 +93,7 @@ public final class ClaudeSettingsModel {
             test = .succeeded(message: Self.successMessage(for: reply))
         } catch {
             test = .failed(message: Self.message(for: error))
-            Log.ui.error("Test prompt failed: \(error.caseLabel, privacy: .public)")
+            Log.ui.error("Test prompt failed: \(error.caseName, privacy: .public)")
         }
     }
 
@@ -105,12 +105,5 @@ public final class ClaudeSettingsModel {
 
     static func message(for error: ClaudeError) -> String {
         error.errorDescription ?? "Claude Code stopped with an error."
-    }
-}
-
-extension ClaudeError {
-    /// A label with no learner content, safe to log as public.
-    fileprivate var caseLabel: String {
-        String(describing: self).prefix { $0 != "(" }.description
     }
 }

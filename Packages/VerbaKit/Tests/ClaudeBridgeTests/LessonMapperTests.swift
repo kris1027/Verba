@@ -111,6 +111,24 @@ struct LessonMapperTests {
         #expect(!problem.reason.isEmpty)
     }
 
+    @Test(arguments: [
+        ("no structured output", ReplyProblem.noStructuredOutput),
+        ("three exercises", .wrongExerciseCount(3)),
+        ("two correct options", .notOneCorrectOption(exercise: 0)),
+        ("two options", .wrongOptionCount(2, exercise: 0)),
+        ("81 character title", .textTooLong(field: "title", limit: 80)),
+        ("blank title", .emptyText(field: "title")),
+        ("reorder without tokens", .missingField("tokens", exercise: 2)),
+        ("empty token", .emptyText(field: "exercise 2 token")),
+    ])
+    func unusableRepliesNameTheirProblem(name: String, expected: ReplyProblem) throws {
+        guard case .failure(let problem) = try map(Self.badReply(name)) else {
+            Issue.record("\(name) was accepted")
+            return
+        }
+        #expect(problem == expected)
+    }
+
     @Test func lopsidedOptionsAreFlaggedButAccepted() throws {
         let lopsided = SampleLesson.replacing(
             SampleLesson.choice, "choices",

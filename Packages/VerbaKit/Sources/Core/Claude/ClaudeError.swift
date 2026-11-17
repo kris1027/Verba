@@ -50,4 +50,20 @@ public enum ClaudeError: Error, Sendable, Hashable, LocalizedError {
             "Claude Code stopped with an error. Try again, or use Check again in Settings > Claude."
         }
     }
+
+    /// The case name alone, such as `notLoggedIn`. It holds no learner content or path, so it is safe to log as public.
+    public var caseName: String {
+        switch self {
+        case .notInstalled: "notInstalled"
+        case .customPathInvalid: "customPathInvalid"
+        case .versionTooOld: "versionTooOld"
+        case .versionUnreadable: "versionUnreadable"
+        case .notLoggedIn: "notLoggedIn"
+        case .usageLimitReached: "usageLimitReached"
+        case .timedOut: "timedOut"
+        case .cancelled: "cancelled"
+        case .invalidReply: "invalidReply"
+        case .failed: "failed"
+        }
+    }
 }

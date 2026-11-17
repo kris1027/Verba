@@ -174,13 +174,9 @@ public actor ClaudeCLI: ClaudeConnection, LessonWriter {
     public func sendTestPrompt() async throws(ClaudeError) -> TestReply {
         let prompt = try Prompt.load("test-v1")
         let outcome = try await call(prompt, model: .haiku, timeLimitSeconds: Self.testTimeLimit)
-        struct Body: Decodable { let reply: String }
-        do {
-            guard let structured = outcome.result.structuredOutput else { throw ReplyProblem("no structured_output") }
-            _ = try structured.decode(Body.self)
-        } catch {
+        if let problem = ReplyProblem(testReply: outcome.result) {
             Log.bridge.error("Unusable test reply: \(outcome.result.rawReply, privacy: .private)")
-            throw .invalidReply(reason: "test reply: \(error)")
+            throw .invalidReply(reason: "test reply \(problem.reason)")
         }
         return TestReply(model: outcome.result.model ?? "Claude", durationMs: outcome.durationMs)
     }
@@ -189,7 +185,7 @@ public actor ClaudeCLI: ClaudeConnection, LessonWriter {
     public func writeLesson(_ request: LessonRequest) async throws(ClaudeError) -> GeneratedLesson {
         let prompt = try LessonPrompt.make(for: request)
         let model = preferences().model
-        var lastProblem = ReplyProblem("no attempt")
+        var lastProblem = ReplyProblem.noStructuredOutput
         for attempt in 1...2 {
             if Task.isCancelled { throw .cancelled }
             let outcome = try await call(prompt, model: model, timeLimitSeconds: Self.lessonTimeLimit)
@@ -249,8 +245,8 @@ public actor ClaudeCLI: ClaudeConnection, LessonWriter {
             case .timedOut:
                 Log.bridge.error("Claude call timed out after \(timeLimitSeconds, privacy: .public) s")
                 throw .timedOut(seconds: timeLimitSeconds)
-            case .launchFailed(let reason):
-                throw await failure(reason, stderr: "", usedGeneration: usedGeneration)
+            case .launchFailed(let detail), .inputNotWritten(let detail):
+                throw await failure(detail, stderr: "", usedGeneration: usedGeneration)
             }
         }
         let durationMs = Int((clock.now - start) / .milliseconds(1))
