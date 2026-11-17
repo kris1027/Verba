@@ -3,7 +3,7 @@ import SwiftUI
 /// The inline panel directly under an answer: `Checking…` with a blinking cursor, a failure with
 /// Try Again, or the grade (glyph and word), the correct answer when the grade is not correct,
 /// and the explanation. It is one accessibility element, and VoiceOver announces the grade and
-/// explanation once each time a result appears.
+/// explanation once each time a result appears (in a live area; the gallery's static grid is quiet).
 public struct FeedbackPanel: View {
     private let state: FeedbackState
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -25,8 +25,10 @@ public struct FeedbackPanel: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .animation(Theme.Motion.feedbackReveal(reduceMotion: reduceMotion), value: state.phase)
-        .onChange(of: state.phase) { _, phase in
-            guard case .result(let tone) = phase else { return }
+        // `initial` covers a panel that is new with a result already in it: `ExerciseCard` gives
+        // each exercise its own panel, so equal grades on two exercises in a row are both read.
+        .onChange(of: state.phase, initial: true) { _, phase in
+            guard isLive, case .result(let tone) = phase else { return }
             AccessibilityNotification.Announcement(announcement(for: tone)).post()
         }
     }

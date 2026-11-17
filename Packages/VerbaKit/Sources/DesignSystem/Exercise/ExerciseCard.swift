@@ -60,6 +60,7 @@ public struct ExerciseCard<Input: View>: View {
             input
                 .environment(\.exerciseFocusRequest, focusRequest)
             FeedbackPanel(state: feedback)
+                .id(position)
             footer
         }
         .padding(Theme.Spacing.l)
