@@ -75,7 +75,8 @@ struct CLILocator: Sendable {
             Log.bridge.info("Login shell lookup exited with status \(output.exitStatus, privacy: .public)")
             return parseShellLookup(stdout: output.stdout, stderr: output.stderr)
         } catch {
-            Log.bridge.error("Login shell lookup failed: \(String(describing: error), privacy: .public)")
+            Log.bridge.error("Login shell lookup failed: \(error.caseName, privacy: .public)")
+            Log.bridge.error("Login shell lookup error detail: \(String(describing: error), privacy: .private)")
             return nil
         }
     }

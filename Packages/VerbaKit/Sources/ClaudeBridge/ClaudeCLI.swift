@@ -125,7 +125,8 @@ public actor ClaudeCLI: ClaudeConnection, LessonWriter {
             output = try await runner.run(
                 statusCommand(location, ["--version"], environment: environment))
         } catch {
-            Log.bridge.error("claude --version did not finish: \(String(describing: error), privacy: .public)")
+            Log.bridge.error("claude --version did not finish: \(error.caseName, privacy: .public)")
+            Log.bridge.error("claude --version error detail: \(String(describing: error), privacy: .private)")
             throw .versionUnreadable
         }
         guard output.exitStatus == 0,
