@@ -88,7 +88,7 @@ spec [0004](../specs/0004-design-system/index.md) · code in `Packages/VerbaKit/
 - [ ] Build it: `/develop design system & UI foundation`
   - [x] DesignSystem target, lint boundary, forced dark, palettes with the contrast test, and the debug Design Gallery (AC-1, AC-2, AC-3, AC-13)
   - [x] Type, spacing, focus and motion tokens, plus text size commands (AC-4, AC-5, AC-11)
-  - [ ] Lesson page, Markdown renderer, all five exercise kinds, and inline feedback with keyboard and VoiceOver (AC-6, AC-7, AC-8, AC-9, AC-10, AC-15)
+  - [x] Lesson page, Markdown renderer, all five exercise kinds, and inline feedback with keyboard and VoiceOver (AC-6, AC-7, AC-8, AC-9, AC-10, AC-15)
   - [ ] Light print style with ⌘P, and `design.md` with its sync test (AC-12, AC-14)
 - [ ] Verify it: `/check verify design system & UI foundation`
 

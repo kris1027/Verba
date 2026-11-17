@@ -13,6 +13,9 @@ public struct DesignGalleryView: View {
     public var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Theme.Spacing.xxl) {
+                LessonPageSection()
+                ExerciseStateSection()
+                MarkdownEdgeSection()
                 BaseComponentSection()
                 TypeSection()
                 LayoutTokenSection()
