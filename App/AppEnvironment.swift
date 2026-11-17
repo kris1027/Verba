@@ -1,3 +1,4 @@
+import ClaudeBridge
 import Core
 import Foundation
 import Persistence
@@ -10,16 +11,28 @@ enum LaunchResult {
 
 /// The composition root. It is the only place that knows the build type,
 /// picks the data folder, and builds the real services that feature models
-/// receive later.
+/// receive.
 final class AppEnvironment {
     let paths: AppPaths
     let learnerStore: any LearnerStore
     let lessonStore: any LessonStore
+    /// The one Claude client. Settings uses it as a `ClaudeConnection`; lessons will use it as a `LessonWriter`.
+    let claude: ClaudeCLI
 
     private init(paths: AppPaths, database: AppDatabase) {
         self.paths = paths
         self.learnerStore = database
         self.lessonStore = database
+        self.claude = ClaudeCLI(paths: paths, preferences: Self.claudePreferences)
+    }
+
+    /// Read at the start of every Claude call, so a Settings change applies to the next one.
+    /// The bridge never reads `UserDefaults` itself.
+    private nonisolated static func claudePreferences() -> ClaudePreferences {
+        let defaults = UserDefaults.standard
+        return ClaudePreferences(
+            savedModel: defaults.string(forKey: ClaudePreferences.modelKey),
+            savedPath: defaults.string(forKey: ClaudePreferences.cliPathKey))
     }
 
     /// Creates the data folder and opens the migrated database, backing it up first when

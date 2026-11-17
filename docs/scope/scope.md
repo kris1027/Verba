@@ -26,7 +26,7 @@ Every feature that creates or grades learning material follows these. `/architec
 | 1 | Stack & architecture | Foundation | done |
 | 2 | Coding standards & tooling | Foundation | done |
 | 3 | Data model | Foundation | done |
-| 4 | Claude Code bridge | Foundation | planned |
+| 4 | Claude Code bridge | Foundation | done |
 | 5 | Design system & UI foundation | Foundation | planned |
 | 6 | First lesson loop | Slice 1 | planned |
 | 7 | Learning goal | Slice 2 | planned |
@@ -68,10 +68,17 @@ spec [0002](../specs/0002-data-model/index.md) · code in `Packages/VerbaKit/Sou
   - [x] Backup before migrating and the launch error screen instead of a crash (AC-11, AC-12)
 - [x] Verify it: `/check verify data model`
 
-### 4. Claude Code bridge · needs a decision
+### 4. Claude Code bridge · done
 The one place the app talks to Claude, by running the local Claude Code CLI: sending prompts with the right learner context, getting structured lesson data back, streaming chat replies, and handling failures.
 **Done when:** the app can send a prompt and get a usable reply through Claude Code; structured replies are validated before use; a missing install, a logged out session, or a timeout shows a clear message instead of a crash.
-- [ ] Design it (spec): `/architect claude code bridge`
+spec [0003](../specs/0003-claude-code-bridge/index.md) · code in `Packages/VerbaKit/Sources/Core/`, `Packages/VerbaKit/Sources/ClaudeBridge/`, `Packages/VerbaKit/Sources/Features/Settings/`, `App/`
+- [x] Design it (spec): `/architect claude code bridge`
+- [x] Build it: `/develop claude code bridge`
+  - [x] Core Claude types, errors, and service protocols, plus fakes (AC-12, AC-14)
+  - [x] Process runner, CLI finder, status check, and error classification (AC-1, AC-2, AC-3, AC-4, AC-5, AC-9, AC-10, AC-11, AC-15)
+  - [x] Thin thread: test prompt and the Settings Claude section wired in AppEnvironment (AC-5, AC-12, AC-13, AC-14)
+  - [x] Lesson call: lesson-v1 prompt, schema, mapping, retry, and the opt in live tests (AC-5, AC-6, AC-7, AC-8, AC-10, AC-13, AC-16)
+- [x] Verify it: `/check verify claude code bridge`
 
 ### 5. Design system & UI foundation · needs a decision
 Calm, readable, book like visual language and base components (lesson page, exercise with instant feedback, quiz with shuffled options, chat bubble, progress view) so every screen feels like one course.

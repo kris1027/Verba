@@ -1,18 +1,25 @@
+import Core
 import SwiftUI
 
-/// The Settings window. Empty until a slice adds its first setting.
+/// The Settings window.
 public struct SettingsView: View {
-    /// Creates the Settings window content.
+    @Environment(\.claudeConnection) private var claudeConnection
+
+    /// Creates the Settings window content. The Claude connection arrives through `@Environment`.
     public init() {}
 
     /// The settings form.
     public var body: some View {
         Form {
-            Text("No settings yet.")
-                .foregroundStyle(.secondary)
+            if let claudeConnection {
+                ClaudeSettingsSection(connection: claudeConnection)
+            } else {
+                Text("Settings are unavailable because Verba couldn't open your data.")
+                    .foregroundStyle(.secondary)
+            }
         }
         .formStyle(.grouped)
-        .frame(width: 420, height: 200)
+        .frame(minWidth: 480, idealWidth: 540, minHeight: 320, idealHeight: 400)
     }
 }
 

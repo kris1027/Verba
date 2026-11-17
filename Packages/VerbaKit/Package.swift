@@ -33,7 +33,9 @@ let package = Package(
             dependencies: [
                 "Core",
                 .product(name: "Subprocess", package: "swift-subprocess"),
-            ]
+            ],
+            // Versioned prompts: a changed prompt is a new file (`lesson-v2.*`), never an edit.
+            resources: [.copy("Resources/Prompts")]
         ),
 
         // SwiftUI views and @Observable models. Imports Core only, never Persistence or ClaudeBridge.
@@ -56,7 +58,7 @@ let package = Package(
             name: "ClaudeBridgeTests",
             dependencies: [
                 "ClaudeBridge",
-                .product(name: "Subprocess", package: "swift-subprocess"),
+                "Core",
             ]
         ),
         .testTarget(name: "FeaturesTests", dependencies: ["Features", "Core"]),
