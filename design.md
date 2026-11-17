@@ -80,7 +80,7 @@ View › Bigger (⌘+), Smaller (⌘−), and Actual Size (⌘0) step through te
 ## Spacing, shape, motion
 
 - **Spacing** (4 point grid, fixed at every text size): `xs` 4, `s` 8, `m` 12, `l` 16, `xl` 24, `xxl` 40.
-- **Shape**: corner radius 2, border width 1, no shadows. Panes use a `hairline` border; controls use `controlBorder`.
+- **Shape**: corner radius 2, border width 1, no shadows; a held down button drops to 0.8 opacity. Panes use a `hairline` border; controls use `controlBorder`.
 - **Reading column**: 680 × text size scale, centered, `xl` side padding; at large sizes it simply fills the window.
 - **Focus**: every focusable component draws its own 2 point `accent` border and turns off the system focus ring, so focus is always sage.
 - **Motion**: the feedback panel fades in and rises `xs` over 0.15 s (ease out); the checking cursor blinks with a 1 s period. With Reduce Motion on, the panel appears without animation and the cursor stays solid.

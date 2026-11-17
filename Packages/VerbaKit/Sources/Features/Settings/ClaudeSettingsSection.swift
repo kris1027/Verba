@@ -23,7 +23,7 @@ struct ClaudeSettingsSection: View {
             .accessibilityElement(children: .combine)
 
             LabeledContent("Claude Code") {
-                VStack(alignment: .trailing, spacing: 6) {
+                VStack(alignment: .trailing, spacing: Theme.Spacing.s) {
                     Text(pathDescription)
                         .themeFont(.code)
                         .textSelection(.enabled)
@@ -108,7 +108,7 @@ private struct ProgressLine: View {
     let text: String
 
     var body: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: Theme.Spacing.s) {
             ProgressView()
                 .controlSize(.small)
             Text(text)
@@ -133,7 +133,7 @@ private struct StatusLabelStyle: LabelStyle {
     let tint: ThemeColor
 
     func makeBody(configuration: Configuration) -> some View {
-        HStack(alignment: .firstTextBaseline, spacing: 6) {
+        HStack(alignment: .firstTextBaseline, spacing: Theme.Spacing.s) {
             configuration.icon
                 .foregroundStyle(tint)
                 .accessibilityHidden(true)

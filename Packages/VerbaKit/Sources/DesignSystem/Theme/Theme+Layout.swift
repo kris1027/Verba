@@ -25,6 +25,8 @@ extension Theme {
         public static let borderWidth: Double = 1
         /// Width of the sage border a focused control draws.
         public static let focusBorderWidth: Double = 2
+        /// Opacity of a button while it is held down.
+        public static let pressedOpacity: Double = 0.8
     }
 
     /// Animation timings. Both are switched off when Reduce Motion is on.

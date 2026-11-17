@@ -52,7 +52,7 @@ private struct TokenRow: View {
             Rectangle()
                 .fill(value.color)
                 .stroke(Theme.hairline, lineWidth: Theme.Shape.borderWidth)
-                .frame(width: 32, height: 20)
+                .frame(width: Theme.Spacing.xxl, height: Theme.Spacing.xl)
                 .accessibilityHidden(true)
             Text(token.rawValue)
                 .themeFont(.code)

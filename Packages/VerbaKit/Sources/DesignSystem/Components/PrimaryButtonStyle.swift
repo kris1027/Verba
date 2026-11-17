@@ -54,7 +54,7 @@ private struct VerbaButtonBody: View {
                 RoundedRectangle(cornerRadius: Theme.Shape.cornerRadius)
                     .strokeBorder(border, lineWidth: Theme.Shape.borderWidth)
             }
-            .opacity(configuration.isPressed ? 0.8 : 1)
+            .opacity(configuration.isPressed ? Theme.Shape.pressedOpacity : 1)
             .contentShape(.rect)
             .focusBorder(isFocused)
     }
