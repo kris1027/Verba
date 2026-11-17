@@ -3,8 +3,12 @@ import SwiftUI
 /// Gallery section: every exercise kind in every state, side by side, without taking focus or
 /// claiming Return and Esc.
 struct ExerciseStateSection: View {
-    private enum GalleryState: CaseIterable {
-        case idle, selected, checking, failed, correct, partlyCorrect, wrong
+    private enum GalleryState: Hashable {
+        case idle, selected, checking, failed
+        case graded(FeedbackTone)
+
+        /// Every state in order; the graded ones come from `FeedbackTone`, so a new tone shows up here.
+        static let all: [GalleryState] = [.idle, .selected, .checking, .failed] + FeedbackTone.allCases.map(graded)
 
         var name: String {
             switch self {
@@ -12,18 +16,7 @@ struct ExerciseStateSection: View {
             case .selected: "Selected"
             case .checking: "Checking"
             case .failed: "Failed"
-            case .correct: "Correct"
-            case .partlyCorrect: "Partly correct"
-            case .wrong: "Wrong"
-            }
-        }
-
-        var tone: FeedbackTone? {
-            switch self {
-            case .correct: .correct
-            case .partlyCorrect: .partlyCorrect
-            case .wrong: .wrong
-            default: nil
+            case .graded(let tone): tone.word
             }
         }
     }
@@ -34,7 +27,7 @@ struct ExerciseStateSection: View {
                 ForEach(SampleLesson.exercises) { exercise in
                     VStack(alignment: .leading, spacing: Theme.Spacing.l) {
                         TerminalLabel("\(exercise.kindLabel) · every state")
-                        ForEach(GalleryState.allCases, id: \.self) { state in
+                        ForEach(GalleryState.all, id: \.self) { state in
                             VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
                                 TerminalLabel(state.name)
                                 card(exercise, in: state)
@@ -62,7 +55,7 @@ struct ExerciseStateSection: View {
 
     /// In the wrong state, the choice exercise shows a wrong pick so both row marks appear.
     private func stateAnswer(_ answer: SampleAnswer, exercise: SampleExercise, state: GalleryState) -> SampleAnswer {
-        guard state == .wrong || state == .partlyCorrect, case .choice = exercise.kind else { return answer }
+        guard case .graded(let tone) = state, tone != .correct, case .choice = exercise.kind else { return answer }
         return SampleAnswer(selection: 0)
     }
 
@@ -71,9 +64,8 @@ struct ExerciseStateSection: View {
         case .idle, .selected: .hidden
         case .checking: .checking(cancel: {})
         case .failed: .failed(message: "Claude did not answer in time. Your answer is kept.", retry: {})
-        case .correct, .partlyCorrect, .wrong:
-            .result(
-                tone: state.tone ?? .correct, correctAnswer: exercise.correctAnswer, explanation: exercise.explanation)
+        case .graded(let tone):
+            .result(tone: tone, correctAnswer: exercise.correctAnswer, explanation: exercise.explanation)
         }
     }
 
@@ -81,7 +73,7 @@ struct ExerciseStateSection: View {
         switch state {
         case .idle, .checking, .failed: .disabled
         case .selected: .check {}
-        case .correct, .partlyCorrect, .wrong: .next {}
+        case .graded: .next {}
         }
     }
 }
