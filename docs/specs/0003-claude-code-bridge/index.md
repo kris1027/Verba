@@ -1,7 +1,7 @@
 # 0003. Claude Code bridge: one isolated, schema checked CLI call per request
 
 **Date**: 2026-11-17
-**Status**: In Progress
+**Status**: Accepted
 
 ## Summary
 
