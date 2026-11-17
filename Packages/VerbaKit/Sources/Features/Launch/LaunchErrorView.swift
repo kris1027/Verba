@@ -1,3 +1,4 @@
+import DesignSystem
 import SwiftUI
 
 /// Shown instead of the app when the saved data can't be opened, so a launch failure is never a crash.
@@ -25,7 +26,8 @@ public struct LaunchErrorView: View {
             Button("Quit", action: quit)
                 .accessibilityHint("Closes Verba.")
         }
-        .frame(minWidth: 480, minHeight: 320)
+        .frame(minWidth: 480, maxWidth: .infinity, minHeight: 320, maxHeight: .infinity)
+        .background(Theme.background)
     }
 }
 

@@ -8,6 +8,7 @@ let package = Package(
         .library(name: "Core", targets: ["Core"]),
         .library(name: "Persistence", targets: ["Persistence"]),
         .library(name: "ClaudeBridge", targets: ["ClaudeBridge"]),
+        .library(name: "DesignSystem", targets: ["DesignSystem"]),
         .library(name: "Features", targets: ["Features"]),
     ],
     dependencies: [
@@ -38,10 +39,17 @@ let package = Package(
             resources: [.copy("Resources/Prompts")]
         ),
 
-        // SwiftUI views and @Observable models. Imports Core only, never Persistence or ClaudeBridge.
+        // Tokens, base components, print path, and the debug Design Gallery.
+        // Domain free: imports none of Core, Persistence, ClaudeBridge, GRDB, Subprocess.
+        .target(
+            name: "DesignSystem",
+            swiftSettings: [.defaultIsolation(MainActor.self)]
+        ),
+
+        // SwiftUI views and @Observable models. Imports Core and DesignSystem, never Persistence or ClaudeBridge.
         .target(
             name: "Features",
-            dependencies: ["Core"],
+            dependencies: ["Core", "DesignSystem"],
             swiftSettings: [.defaultIsolation(MainActor.self)]
         ),
 
@@ -61,6 +69,7 @@ let package = Package(
                 "Core",
             ]
         ),
+        .testTarget(name: "DesignSystemTests", dependencies: ["DesignSystem"]),
         .testTarget(name: "FeaturesTests", dependencies: ["Features", "Core"]),
     ],
     swiftLanguageModes: [.v6]

@@ -27,6 +27,8 @@ targets:
       - package: VerbaKit
         product: ClaudeBridge
       - package: VerbaKit
+        product: DesignSystem
+      - package: VerbaKit
         product: Features
     info:
       path: App/Info.plist

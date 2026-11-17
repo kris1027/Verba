@@ -75,6 +75,14 @@ custom_rules:
     message: "Features is presentation and imports Core only. Services arrive through initializers or @Environment."
     severity: error
 
+  design_system_is_domain_free:
+    name: "DesignSystem is domain free"
+    regex: '^\s*(@testable\s+)?import\s+(Core|Persistence|ClaudeBridge|GRDB|Subprocess)\b'
+    match_kinds: [keyword, identifier]
+    included: '/Sources/DesignSystem/'
+    message: "DesignSystem knows nothing about the domain. Features maps Core values to plain strings and enums first."
+    severity: error
+
   core_is_foundation_only:
     name: "Core is Foundation only"
     regex: '^\s*import\s+(SwiftUI|AppKit|Combine|Observation|GRDB|Subprocess|Persistence|ClaudeBridge|Features)\b'

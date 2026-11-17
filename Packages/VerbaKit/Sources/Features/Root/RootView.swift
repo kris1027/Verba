@@ -1,3 +1,4 @@
+import DesignSystem
 import SwiftUI
 
 /// The main window: a sidebar of sections and an empty detail area.
@@ -16,12 +17,16 @@ public struct RootView: View {
             }
             .navigationSplitViewColumnWidth(min: 180, ideal: 200)
         } detail: {
-            if let selection {
-                ContentUnavailableView(selection.title, systemImage: selection.systemImage)
-                    .navigationTitle(selection.title)
-            } else {
-                ContentUnavailableView("Verba", systemImage: "character.book.closed")
+            Group {
+                if let selection {
+                    ContentUnavailableView(selection.title, systemImage: selection.systemImage)
+                        .navigationTitle(selection.title)
+                } else {
+                    ContentUnavailableView("Verba", systemImage: "character.book.closed")
+                }
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Theme.background)
         }
     }
 }

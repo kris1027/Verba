@@ -48,6 +48,15 @@ final class AppEnvironment {
         }
     }
 
+    /// Whether the Debug menu (with the Design Gallery) appears. True only in debug builds.
+    static let showsDebugMenu: Bool = {
+        #if DEBUG
+        true
+        #else
+        false
+        #endif
+    }()
+
     /// Debug builds keep their data apart so development never touches real progress.
     /// `#if DEBUG` is reliable here (the app target), not inside the Swift package.
     private static var dataRoot: URL {

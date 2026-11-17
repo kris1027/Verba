@@ -1,4 +1,5 @@
 import Core
+import DesignSystem
 import SwiftUI
 
 /// The Settings window.
@@ -19,6 +20,8 @@ public struct SettingsView: View {
             }
         }
         .formStyle(.grouped)
+        .scrollContentBackground(.hidden)
+        .background(Theme.background)
         .frame(minWidth: 480, idealWidth: 540, minHeight: 320, idealHeight: 400)
     }
 }
