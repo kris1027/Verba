@@ -29,6 +29,7 @@ public struct DesignGalleryView: View {
         .verbaContentFont()
         .frame(minWidth: 720, minHeight: 520)
         .navigationTitle("Design Gallery")
+        .focusedSceneValue(\.lessonPrintAction, LessonPrintAction { LessonPrinter.print(.sample) })
     }
 }
 

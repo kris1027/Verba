@@ -34,6 +34,7 @@ struct VerbaApp: App {
         }
         .commands {
             TextSizeCommands()
+            PrintCommands()
             if AppEnvironment.showsDebugMenu {
                 DebugCommands()
             }
