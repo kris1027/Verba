@@ -26,7 +26,7 @@ public struct ExerciseCard<Input: View>: View {
     ///   - kindLabel: The kind in words, such as `Translate`; shown in capitals.
     ///   - prompt: The prompt, shown as written.
     ///   - feedback: What the panel under the input shows.
-    ///   - primaryAction: Check, Next, or disabled Check.
+    ///   - primaryAction: Check, Next, or disabled Check while awaiting an answer.
     ///   - returnSubmitsFromInput: True for typed answers, whose field submits on Return.
     ///   - input: One of `ChoiceList`, `AnswerField`, `ReorderBoard`, `MatchBoard`.
     public init(
@@ -101,7 +101,7 @@ public struct ExerciseCard<Input: View>: View {
             Button(primaryAction.title, action: next)
                 .buttonStyle(.verbaPrimary)
                 .keyboardShortcut(isLive ? .defaultAction : nil)
-        case .disabled:
+        case .awaitingAnswer:
             Button(primaryAction.title) {}
                 .buttonStyle(.verbaPrimary)
                 .disabled(true)

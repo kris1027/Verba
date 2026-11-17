@@ -27,7 +27,7 @@ struct ExerciseComponentTests {
     @Test func actionTitles() {
         #expect(ExerciseAction.check {}.title == "Check")
         #expect(ExerciseAction.next {}.title == "Next")
-        #expect(ExerciseAction.disabled.title == "Check")
+        #expect(ExerciseAction.awaitingAnswer.title == "Check")
     }
 
     @Test func feedbackPhaseDropsTheActions() {

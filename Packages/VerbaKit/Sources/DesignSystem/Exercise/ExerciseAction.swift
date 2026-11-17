@@ -1,4 +1,4 @@
-/// The primary button of an exercise card. The feature model picks it: `.disabled` while nothing
+/// The primary button of an exercise card. The feature model picks it: `.awaitingAnswer` while nothing
 /// is chosen or the field is blank, `.check` once there is an answer, `.next` after a result.
 public enum ExerciseAction {
     /// "Check": sends the answer.
@@ -6,12 +6,12 @@ public enum ExerciseAction {
     /// "Next": moves on to the next exercise.
     case next(() -> Void)
     /// "Check", disabled: there is no answer yet.
-    case disabled
+    case awaitingAnswer
 
     /// The button title.
     public var title: String {
         switch self {
-        case .check, .disabled: "Check"
+        case .check, .awaitingAnswer: "Check"
         case .next: "Next"
         }
     }

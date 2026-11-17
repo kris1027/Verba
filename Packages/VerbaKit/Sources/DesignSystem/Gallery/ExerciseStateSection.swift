@@ -71,7 +71,7 @@ struct ExerciseStateSection: View {
 
     private func action(in state: GalleryState) -> ExerciseAction {
         switch state {
-        case .idle, .checking, .failed: .disabled
+        case .idle, .checking, .failed: .awaitingAnswer
         case .selected: .check {}
         case .graded: .next {}
         }

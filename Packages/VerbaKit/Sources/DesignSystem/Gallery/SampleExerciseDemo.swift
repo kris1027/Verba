@@ -40,8 +40,8 @@ struct SampleExerciseDemo: View {
     private var primaryAction: ExerciseAction {
         switch phase {
         case .graded: .next(reset)
-        case .checking, .failed: .disabled
-        case .answering: answer.hasAnswer(for: exercise.kind) ? .check(check) : .disabled
+        case .checking, .failed: .awaitingAnswer
+        case .answering: answer.hasAnswer(for: exercise.kind) ? .check(check) : .awaitingAnswer
         }
     }
 
