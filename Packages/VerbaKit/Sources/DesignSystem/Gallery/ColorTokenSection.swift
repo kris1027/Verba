@@ -4,12 +4,11 @@ import SwiftUI
 /// against the palette's background and surface.
 struct ColorTokenSection: View {
     var body: some View {
-        VStack(alignment: .leading, spacing: 24) {
-            Text("Color tokens")
-                .font(.title2.bold())
-                .accessibilityAddTraits(.isHeader)
-            ForEach(Palette.all, id: \.name) { palette in
-                PaletteTable(palette: palette)
+        GallerySection(title: "Color tokens") {
+            VStack(alignment: .leading, spacing: Theme.Spacing.xl) {
+                ForEach(Palette.all, id: \.name) { palette in
+                    PaletteTable(palette: palette)
+                }
             }
         }
     }
@@ -20,11 +19,9 @@ private struct PaletteTable: View {
     let palette: Palette
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(palette.name.uppercased())
-                .font(.system(.callout, design: .monospaced))
-                .foregroundStyle(Theme.textTertiary)
-            Grid(alignment: .leading, horizontalSpacing: 16, verticalSpacing: 8) {
+        VStack(alignment: .leading, spacing: Theme.Spacing.s) {
+            TerminalLabel(palette.name)
+            Grid(alignment: .leading, horizontalSpacing: Theme.Spacing.l, verticalSpacing: Theme.Spacing.s) {
                 GridRow {
                     Text("")
                     Text("Token")
@@ -33,7 +30,7 @@ private struct PaletteTable: View {
                     Text("On surface")
                     Text("Role")
                 }
-                .font(.system(.callout, design: .monospaced))
+                .themeFont(.label)
                 .foregroundStyle(Theme.textSecondary)
                 ForEach(ColorToken.allCases, id: \.self) { token in
                     if let value = palette[token] {
@@ -54,13 +51,13 @@ private struct TokenRow: View {
         GridRow {
             Rectangle()
                 .fill(value.color)
-                .stroke(Theme.hairline, lineWidth: 1)
+                .stroke(Theme.hairline, lineWidth: Theme.Shape.borderWidth)
                 .frame(width: 32, height: 20)
                 .accessibilityHidden(true)
             Text(token.rawValue)
-                .font(.system(.body, design: .monospaced))
+                .themeFont(.code)
             Text(value.hexString)
-                .font(.system(.body, design: .monospaced))
+                .themeFont(.code)
             ratioText(against: .background)
             ratioText(against: .surface)
             Text(token.role)
@@ -69,10 +66,14 @@ private struct TokenRow: View {
         .accessibilityElement(children: .combine)
     }
 
-    private func ratioText(against base: ColorToken) -> Text {
-        guard let baseValue = palette[base] else { return Text("–") }
-        let ratio = Contrast.ratio(value, baseValue)
-        return Text(ratio, format: .number.precision(.fractionLength(1)))
-            .font(.system(.body, design: .monospaced))
+    private func ratioText(against base: ColorToken) -> some View {
+        Group {
+            if let baseValue = palette[base] {
+                Text(Contrast.ratio(value, baseValue), format: .number.precision(.fractionLength(1)))
+            } else {
+                Text(verbatim: "–")
+            }
+        }
+        .themeFont(.code)
     }
 }

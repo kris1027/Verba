@@ -33,6 +33,7 @@ struct VerbaApp: App {
             .verbaWindowStyle()
         }
         .commands {
+            TextSizeCommands()
             if AppEnvironment.showsDebugMenu {
                 DebugCommands()
             }

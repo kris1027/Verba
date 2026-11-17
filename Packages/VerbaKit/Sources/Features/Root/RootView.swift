@@ -19,14 +19,15 @@ public struct RootView: View {
         } detail: {
             Group {
                 if let selection {
-                    ContentUnavailableView(selection.title, systemImage: selection.systemImage)
+                    SectionPlaceholder(title: selection.title, systemImage: selection.systemImage)
                         .navigationTitle(selection.title)
                 } else {
-                    ContentUnavailableView("Verba", systemImage: "character.book.closed")
+                    SectionPlaceholder(title: "Verba", systemImage: "character.book.closed")
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Theme.background)
+            .verbaContentFont()
         }
     }
 }

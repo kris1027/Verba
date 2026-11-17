@@ -12,14 +12,18 @@ public struct DesignGalleryView: View {
     /// The gallery sections in one scrolling page.
     public var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 40) {
+            VStack(alignment: .leading, spacing: Theme.Spacing.xxl) {
+                BaseComponentSection()
+                TypeSection()
+                LayoutTokenSection()
                 ColorTokenSection()
             }
-            .padding(24)
+            .padding(Theme.Spacing.xl)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .background(Theme.background)
         .foregroundStyle(Theme.text)
+        .verbaContentFont()
         .frame(minWidth: 720, minHeight: 520)
         .navigationTitle("Design Gallery")
     }

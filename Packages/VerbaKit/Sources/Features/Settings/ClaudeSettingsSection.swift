@@ -1,4 +1,5 @@
 import Core
+import DesignSystem
 import SwiftUI
 import UniformTypeIdentifiers
 
@@ -24,7 +25,7 @@ struct ClaudeSettingsSection: View {
             LabeledContent("Claude Code") {
                 VStack(alignment: .trailing, spacing: 6) {
                     Text(pathDescription)
-                        .font(.callout.monospaced())
+                        .themeFont(.code)
                         .textSelection(.enabled)
                         .multilineTextAlignment(.trailing)
                         .accessibilityLabel("Path in use: \(pathDescription)")
@@ -116,20 +117,20 @@ private struct ProgressLine: View {
     }
 }
 
-/// A result line: a green checkmark when all is well, an orange warning for a problem.
+/// A result line: a mint checkmark when all is well, an amber warning for a problem.
 private struct StatusMessage: View {
     let text: String
     let isProblem: Bool
 
     var body: some View {
         Label(text, systemImage: isProblem ? "exclamationmark.triangle.fill" : "checkmark.circle.fill")
-            .labelStyle(StatusLabelStyle(tint: isProblem ? .orange : .green))
+            .labelStyle(StatusLabelStyle(tint: isProblem ? Theme.partly : Theme.correct))
     }
 }
 
 /// A status message in the primary text color (for contrast), with only the icon tinted.
 private struct StatusLabelStyle: LabelStyle {
-    let tint: Color
+    let tint: ThemeColor
 
     func makeBody(configuration: Configuration) -> some View {
         HStack(alignment: .firstTextBaseline, spacing: 6) {

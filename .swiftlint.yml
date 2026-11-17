@@ -39,6 +39,12 @@ identifier_name:
     - db
     - id
     - ui
+    # Theme.Spacing steps (spec 0004): xs, s, m, l, xl.
+    - xs
+    - s
+    - m
+    - l
+    - xl
 
 # Architecture rules from AGENTS.md. `match_kinds` limits each rule to real
 # code, so a comment that mentions a module never trips it.

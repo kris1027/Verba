@@ -16,12 +16,13 @@ public struct SettingsView: View {
                 ClaudeSettingsSection(connection: claudeConnection)
             } else {
                 Text("Settings are unavailable because Verba couldn't open your data.")
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Theme.textSecondary)
             }
         }
         .formStyle(.grouped)
         .scrollContentBackground(.hidden)
         .background(Theme.background)
+        .verbaContentFont()
         .frame(minWidth: 480, idealWidth: 540, minHeight: 320, idealHeight: 400)
     }
 }
