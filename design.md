@@ -141,7 +141,7 @@ These are described here so later slices match; they are built with their featur
 | Tab, Shift Tab | everywhere | moves through every control in reading order (sage focus border) |
 | Space or click | reorder and match items | places or removes a word; picks, pairs, or unpairs an item |
 | Esc | while checking | cancels the check (does nothing otherwise) |
-| ⌘+, ⌘−, ⌘0 | View menu | Bigger, Smaller, Actual Size |
+| ⌘+ (or ⌘=), ⌘−, ⌘0 | View menu | Bigger, Smaller, Actual Size |
 | ⌘P | File menu | prints the lesson the focused window offers |
 | ⌥⌘D | Debug menu (debug builds only) | opens the Design Gallery |
 

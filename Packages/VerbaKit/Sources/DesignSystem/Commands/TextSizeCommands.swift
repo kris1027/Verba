@@ -1,7 +1,8 @@
 import SwiftUI
 
 /// Bigger (⌘+), Smaller (⌘−), and Actual Size (⌘0) in the View menu. They step Verba's own text
-/// size and save it, so it survives a relaunch.
+/// size and save it, so it survives a relaunch. `.verbaWindowStyle()` adds ⌘= for Bigger, since
+/// ⌘+ needs Shift on most layouts.
 public struct TextSizeCommands: Commands {
     @AppStorage(TextSize.storageKey) private var storedTextSize = TextSize.defaultSize.rawValue
 

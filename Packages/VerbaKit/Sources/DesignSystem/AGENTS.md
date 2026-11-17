@@ -11,7 +11,7 @@ Verba's look in one domain free library: color, type, spacing, shape and motion 
 | `Tokens/` | `Palette` (standard, Increase Contrast, print) of `RGB` hex values, `ColorToken`, `Contrast`, `ThemeFont`, `TextSize` (ten steps and their scale) |
 | `Theme/` | `Theme` colors as `ThemeColor` styles, spacing, shape, motion, reading width, `.themeFont(_:)`, `.verbaContentFont()`, the `\.textSize` environment entry |
 | `Window/` | `Appearance.applyDark()` and `.verbaWindowStyle()` (dark scheme, sage tint, text size from `verba.textSize`) |
-| `Commands/` | `TextSizeCommands` (⌘+ ⌘− ⌘0), `PrintCommands` (⌘P), `DebugCommands` (⌥⌘D) |
+| `Commands/` | `TextSizeCommands` (⌘+ or ⌘=, ⌘− ⌘0), `PrintCommands` (⌘P), `DebugCommands` (⌥⌘D) |
 | `Components/` | `TerminalLabel`, button styles, `BlinkingCursor`, `.focusBorder(_:)` |
 | `Lesson/`, `Markdown/` | `ReadingColumn`, `LessonHeader`, `MarkdownDocument` (parse to blocks), `MarkdownText` |
 | `Exercise/` | `ExerciseCard`, `ExerciseAction`, `ChoiceList`, `AnswerField`, `ReorderBoard`, `MatchBoard`, `MatchPair`, `.locked(_:)`, the focus request helpers |
