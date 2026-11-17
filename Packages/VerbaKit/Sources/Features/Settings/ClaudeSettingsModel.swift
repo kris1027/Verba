@@ -80,7 +80,7 @@ public final class ClaudeSettingsModel {
         guard check == latestCheck else { return }
         switch result {
         case .ready(let version, let path): status = .ready(version: version, path: path)
-        case .problem(let error): status = .problem(message: Self.message(for: error))
+        case .problem(let error): status = .problem(message: error.localizedDescription)
         }
     }
 
@@ -92,7 +92,7 @@ public final class ClaudeSettingsModel {
             let reply = try await connection.sendTestPrompt()
             test = .succeeded(message: Self.successMessage(for: reply))
         } catch {
-            test = .failed(message: Self.message(for: error))
+            test = .failed(message: error.localizedDescription)
             Log.ui.error("Test prompt failed: \(error.caseName, privacy: .public)")
         }
     }
@@ -101,9 +101,5 @@ public final class ClaudeSettingsModel {
     static func successMessage(for reply: TestReply) -> String {
         let seconds = (Double(reply.durationMs) / 1000).formatted(.number.precision(.fractionLength(1)))
         return "Reply received in \(seconds) s from \(reply.model)"
-    }
-
-    static func message(for error: ClaudeError) -> String {
-        error.errorDescription ?? "Claude Code stopped with an error."
     }
 }

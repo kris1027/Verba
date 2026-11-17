@@ -80,38 +80,18 @@ struct ClaudeSettingsSection: View {
 
     @ViewBuilder private var statusLine: some View {
         switch model.status {
-        case .checking:
-            HStack(spacing: 6) {
-                ProgressView()
-                    .controlSize(.small)
-                Text(model.statusText)
-            }
-        case .ready:
-            Label(model.statusText, systemImage: "checkmark.circle.fill")
-                .labelStyle(StatusLabelStyle(tint: .green))
-        case .problem:
-            Label(model.statusText, systemImage: "exclamationmark.triangle.fill")
-                .labelStyle(StatusLabelStyle(tint: .orange))
+        case .checking: ProgressLine(text: model.statusText)
+        case .ready: StatusMessage(text: model.statusText, isProblem: false)
+        case .problem: StatusMessage(text: model.statusText, isProblem: true)
         }
     }
 
     @ViewBuilder private var testResult: some View {
         switch model.test {
-        case .idle:
-            EmptyView()
-        case .running:
-            HStack(spacing: 6) {
-                ProgressView()
-                    .controlSize(.small)
-                Text("Waiting for Claude…")
-            }
-            .accessibilityElement(children: .combine)
-        case .succeeded(let message):
-            Label(message, systemImage: "checkmark.circle.fill")
-                .labelStyle(StatusLabelStyle(tint: .green))
-        case .failed(let message):
-            Label(message, systemImage: "exclamationmark.triangle.fill")
-                .labelStyle(StatusLabelStyle(tint: .orange))
+        case .idle: EmptyView()
+        case .running: ProgressLine(text: "Waiting for Claude…")
+        case .succeeded(let message): StatusMessage(text: message, isProblem: false)
+        case .failed(let message): StatusMessage(text: message, isProblem: true)
         }
     }
 
@@ -119,6 +99,31 @@ struct ClaudeSettingsSection: View {
         if let pathInUse = model.pathInUse { return pathInUse }
         if let savedPath { return savedPath }
         return "Automatic"
+    }
+}
+
+/// A small spinner with the text of what is running, read as one element by VoiceOver.
+private struct ProgressLine: View {
+    let text: String
+
+    var body: some View {
+        HStack(spacing: 6) {
+            ProgressView()
+                .controlSize(.small)
+            Text(text)
+        }
+        .accessibilityElement(children: .combine)
+    }
+}
+
+/// A result line: a green checkmark when all is well, an orange warning for a problem.
+private struct StatusMessage: View {
+    let text: String
+    let isProblem: Bool
+
+    var body: some View {
+        Label(text, systemImage: isProblem ? "exclamationmark.triangle.fill" : "checkmark.circle.fill")
+            .labelStyle(StatusLabelStyle(tint: isProblem ? .orange : .green))
     }
 }
 
