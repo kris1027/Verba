@@ -82,7 +82,7 @@ spec [0003](../specs/0003-claude-code-bridge/index.md) · code in `Packages/Verb
 
 ### 5. Design system & UI foundation · in-progress
 Calm, readable, book like visual language and base components (lesson page, exercise with instant feedback, quiz with shuffled options, chat bubble, progress view) so every screen feels like one course.
-**Done when:** `design.md` covers type, color, spacing, and components, with light and dark mode; base components handle focus and keyboard; lesson pages print cleanly.
+**Done when:** `design.md` covers type, color, spacing, and components, for a dark only screen plus a light print style; base components handle focus and keyboard; lesson pages print cleanly.
 spec [0004](../specs/0004-design-system/index.md) · code in `Packages/VerbaKit/Sources/DesignSystem/`
 - [x] Design it (spec): `/architect design system & UI foundation`
 - [x] Build it: `/develop design system & UI foundation`
