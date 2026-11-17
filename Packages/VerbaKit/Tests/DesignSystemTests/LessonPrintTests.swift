@@ -41,6 +41,26 @@ struct LessonPrintTests {
         }
     }
 
+    @Test func tableHeaderHasARuleBelowAndNoUnderline() throws {
+        let text = printed()
+        let whole = NSRange(location: 0, length: text.length)
+        var ruled: [String] = []
+        text.enumerateAttribute(.paragraphStyle, in: whole) { value, range, _ in
+            guard let style = value as? NSParagraphStyle, let block = style.textBlocks.first else { return }
+            #expect(block.width(for: .border, edge: .maxY) == 1)
+            ruled.append((text.string as NSString).substring(with: range))
+        }
+        #expect(ruled.count == 1)
+        #expect(ruled.first?.hasPrefix("Osoba\tser\testar") == true)
+        text.enumerateAttribute(.underlineStyle, in: whole) { value, _, _ in
+            #expect(value == nil)
+        }
+    }
+
+    @Test func noHeadingBetweenExplanationAndExercises() {
+        #expect(!printed().string.contains("Exercises\n"))
+    }
+
     @Test func everyGradeShowsGlyphAndWord() {
         let string = printed().string
         for tone in FeedbackTone.allCases {

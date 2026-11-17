@@ -42,8 +42,6 @@ public enum LessonPrinter {
         for block in MarkdownDocument(markdown: document.explanationMarkdown).blocks {
             builder.add(block)
         }
-        builder.add(
-            "Exercises", font: .serif(Theme.Print.heading, bold: true), color: .text, spaceBefore: 10, spaceAfter: 6)
         for exercise in document.exercises {
             builder.add(exercise)
         }
@@ -77,9 +75,11 @@ private struct PrintTextBuilder {
         indent: Double = 0,
         spaceBefore: Double = 0,
         spaceAfter: Double = 6,
-        tabStops: [Double] = []
+        tabStops: [Double] = [],
+        ruleBelow: Bool = false
     ) {
         let style = NSMutableParagraphStyle()
+        if ruleBelow { style.textBlocks = [Self.ruleBelowBlock()] }
         style.paragraphSpacingBefore = spaceBefore
         style.paragraphSpacing = spaceAfter
         style.firstLineHeadIndent = indent
@@ -150,6 +150,16 @@ private struct PrintTextBuilder {
         }
     }
 
+    /// A text block that draws a `hairline` rule along its bottom edge, the full width of the page.
+    private static func ruleBelowBlock() -> NSTextBlock {
+        let block = NSTextBlock()
+        block.setValue(100, type: .percentageValueType, for: .width)
+        block.setWidth(1, type: .absoluteValueType, for: .border, edge: .maxY)
+        block.setWidth(2, type: .absoluteValueType, for: .padding, edge: .maxY)
+        block.setBorderColor(Palette.print.rgb(.hairline).nsColor, for: .maxY)
+        return block
+    }
+
     private mutating func addBlankLine(font: NSFont) {
         result.append(
             NSAttributedString(
@@ -182,11 +192,9 @@ private struct PrintTextBuilder {
             return line
         }
         if !table.header.isEmpty {
-            let header = NSMutableAttributedString(attributedString: line(table.header, font: bold))
-            header.addAttribute(
-                .underlineStyle, value: NSUnderlineStyle.single.rawValue,
-                range: NSRange(location: 0, length: header.length))
-            add(header, font: bold, color: .text, spaceAfter: 3, tabStops: stops)
+            add(
+                line(table.header, font: bold), font: bold, color: .text, spaceAfter: 3, tabStops: stops,
+                ruleBelow: true)
         }
         for row in table.rows {
             add(line(row, font: font), font: font, color: .text, spaceAfter: 2, tabStops: stops)
