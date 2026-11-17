@@ -5,9 +5,10 @@ extension EnvironmentValues {
     /// the card then takes keyboard focus.
     @Entry var exerciseFocusRequest = 0
 
-    /// Whether inputs take focus when asked. The gallery turns it off for its static state grid,
-    /// so only the live exercise grabs the keyboard.
-    @Entry var exerciseTakesFocus = true
+    /// Whether the exercises here are live: their inputs take focus when asked, and their
+    /// buttons claim Return and Esc. The gallery turns it off for its static state grid, so only
+    /// the live exercise answers the keyboard.
+    @Entry var exerciseIsLive = true
 }
 
 extension View {
@@ -28,11 +29,11 @@ private struct ExerciseFocusTaker: ViewModifier {
     let isLocked: Bool
     let focus: () -> Void
     @Environment(\.exerciseFocusRequest) private var request
-    @Environment(\.exerciseTakesFocus) private var takesFocus
+    @Environment(\.exerciseIsLive) private var isLive
 
     func body(content: Content) -> some View {
         content.task(id: request) {
-            guard request > 0, takesFocus, !isLocked else { return }
+            guard request > 0, isLive, !isLocked else { return }
             focus()
         }
     }

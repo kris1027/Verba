@@ -34,7 +34,7 @@ Verba's look in one domain free library: color, type, spacing, shape and motion 
 ## Gotchas
 
 - macOS SwiftUI ignores `.dynamicTypeSize` and `@ScaledMetric`; Verba scales with `Font.scaled(by:)` from `TextSize.scale`.
-- `ExerciseCard` raises a focus request in the environment; each input focuses itself on it. The gallery turns this off (`exerciseTakesFocus`) for its static state grid.
+- `ExerciseCard` raises a focus request in the environment; each input focuses itself on it. The gallery turns this off (`exerciseIsLive`) for its static state grid, which also drops the cards' Return and Esc shortcuts.
 - For typed answers the field submits Check; the card's button only takes Return once it says Next, so Return never fires twice.
 - `FeedbackPanel` keeps a stable container while hidden so the change into a result is seen and announced once.
 

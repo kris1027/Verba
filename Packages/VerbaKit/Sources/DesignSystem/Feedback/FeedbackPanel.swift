@@ -7,6 +7,7 @@ import SwiftUI
 public struct FeedbackPanel: View {
     private let state: FeedbackState
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.exerciseIsLive) private var isLive
 
     /// Creates the panel for a state. In `.hidden` it draws nothing.
     public init(state: FeedbackState) {
@@ -46,12 +47,14 @@ public struct FeedbackPanel: View {
                 }
                 .background {
                     // Esc while checking: the only time Esc does anything in an exercise.
-                    Button("Cancel", action: cancel)
-                        .keyboardShortcut(.cancelAction)
-                        .opacity(0)
-                        .focusable(false)
-                        .allowsHitTesting(false)
-                        .accessibilityHidden(true)
+                    if isLive {
+                        Button("Cancel", action: cancel)
+                            .keyboardShortcut(.cancelAction)
+                            .opacity(0)
+                            .focusable(false)
+                            .allowsHitTesting(false)
+                            .accessibilityHidden(true)
+                    }
                 }
             }
             .accessibilityElement(children: .ignore)

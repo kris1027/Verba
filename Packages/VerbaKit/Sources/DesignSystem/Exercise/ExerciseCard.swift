@@ -5,7 +5,8 @@ import SwiftUI
 /// changes, keyboard focus moves to the input.
 ///
 /// Return activates the primary button. For typed answers (`returnSubmitsFromInput`), the field
-/// submits Check itself, and the button takes Return only once it says Next.
+/// submits Check itself, and the button takes Return only once it says Next. A card in a
+/// non live area (the gallery's static state grid) claims no keys at all.
 public struct ExerciseCard<Input: View>: View {
     private let position: Int
     private let count: Int
@@ -16,6 +17,7 @@ public struct ExerciseCard<Input: View>: View {
     private let returnSubmitsFromInput: Bool
     private let input: Input
     @State private var focusRequest = 0
+    @Environment(\.exerciseIsLive) private var isLive
 
     /// Creates a card.
     /// - Parameters:
@@ -97,11 +99,11 @@ public struct ExerciseCard<Input: View>: View {
         case .check(let check):
             Button(primaryAction.title, action: check)
                 .buttonStyle(.verbaPrimary)
-                .keyboardShortcut(returnSubmitsFromInput ? nil : .defaultAction)
+                .keyboardShortcut(isLive && !returnSubmitsFromInput ? .defaultAction : nil)
         case .next(let next):
             Button(primaryAction.title, action: next)
                 .buttonStyle(.verbaPrimary)
-                .keyboardShortcut(.defaultAction)
+                .keyboardShortcut(isLive ? .defaultAction : nil)
         case .disabled:
             Button(primaryAction.title) {}
                 .buttonStyle(.verbaPrimary)

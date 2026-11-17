@@ -1,6 +1,7 @@
 import SwiftUI
 
-/// Gallery section: every exercise kind in every state, side by side, without taking focus.
+/// Gallery section: every exercise kind in every state, side by side, without taking focus or
+/// claiming Return and Esc.
 struct ExerciseStateSection: View {
     private enum GalleryState: CaseIterable {
         case idle, selected, checking, failed, correct, partlyCorrect, wrong
@@ -43,7 +44,7 @@ struct ExerciseStateSection: View {
                 }
             }
             .readingColumnWidth()
-            .environment(\.exerciseTakesFocus, false)
+            .environment(\.exerciseIsLive, false)
         }
     }
 
