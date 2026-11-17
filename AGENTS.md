@@ -31,17 +31,18 @@ Stored in `docs/specs/`, one folder per spec: `docs/specs/NNNN-title/index.md` (
 
 ## Rules
 
-- **Clean Architecture, mapped to modules**: `Core` is the domain (entities, value objects, teaching rules, `Sendable` service protocols; Foundation only). `Persistence` (GRDB) and `ClaudeBridge` (CLI) are infrastructure that implement `Core` protocols. `Features` is presentation and imports `Core` only. `App/AppEnvironment.swift` is the composition root. Dependencies point inward; `Package.swift` enforces it.
+- **Clean Architecture, mapped to modules**: `Core` is the domain (entities, value objects, teaching rules, `Sendable` service protocols; Foundation only). `Persistence` (GRDB) and `ClaudeBridge` (CLI) are infrastructure that implement `Core` protocols. `DesignSystem` holds tokens and base components and imports no domain or infrastructure module. `Features` is presentation and imports `Core` and `DesignSystem` only. `App/AppEnvironment.swift` is the composition root. Dependencies point inward; `Package.swift` enforces it.
 - Business rules (grading, quiz shuffling, spacing) live in `Core` as plain value types that enforce their own invariants; feature models only orchestrate service calls.
 - No GRDB, Subprocess, or prompt types cross a module boundary: pass `Core` value types and `AsyncStream`s of `Sendable` values.
 - Services go into models through initializers or a SwiftUI `@Environment` entry. No singletons, no global database handle.
 - Only `ClaudeBridge` launches a process or builds a prompt. The app (not Claude) shuffles quiz options.
-- `App` and `Features` default to main actor isolation; `Core`, `Persistence`, `ClaudeBridge` stay nonisolated.
+- `App`, `Features`, and `DesignSystem` default to main actor isolation; `Core`, `Persistence`, `ClaudeBridge` stay nonisolated.
 - Packages never check the build type; only `AppEnvironment` uses `#if DEBUG` (picks `Verba-Dev` vs `Verba` data folder).
 - No third party dependency beyond GRDB and swift-subprocess without a spec or explicit OK. Edit `project.yml`, never the generated project.
 - Every `public` type and member in VerbaKit has a `///` doc comment.
 - Each module throws its own typed error enum with a user facing message; no stringly errors, no silent `try?` on real work.
-- Accessibility baseline on every screen: labelled controls, Dynamic Type, VoiceOver order, WCAG AA contrast.
+- Accessibility baseline on every screen: labelled controls, Verba's own text size (macOS SwiftUI applies no Dynamic Type), VoiceOver order, WCAG AA contrast.
+- Design system: build all UI to `design.md`; token values live in `DesignSystem` (`Theme`), never as literals in a view.
 - Testing gate: each feature ships Swift Testing tests in the matching package target, using fakes of `Core` protocols; Persistence tests use a real (in memory or temp folder) database.
 - Commits follow Conventional Commits, scoped by module: `feat(bridge): …`, `fix(store): …`.
 
@@ -69,5 +70,6 @@ MCP servers: XcodeBuildMCP (recommended), Xcode `mcpbridge` (recommended), apple
 
 - [Packages/VerbaKit/Sources/Persistence/AGENTS.md](Packages/VerbaKit/Sources/Persistence/AGENTS.md) (GRDB database, migrations, repositories)
 - [Packages/VerbaKit/Sources/ClaudeBridge/AGENTS.md](Packages/VerbaKit/Sources/ClaudeBridge/AGENTS.md) (runs the `claude` CLI: status checks, versioned prompts, lesson calls)
+- [Packages/VerbaKit/Sources/DesignSystem/AGENTS.md](Packages/VerbaKit/Sources/DesignSystem/AGENTS.md) (tokens, lesson and exercise components, text size, print, Design Gallery)
 
 _Drafted by /audit from the repo, worth a quick human pass. Edit freely: once a line stops matching this draft, later runs treat it as curated and will flag rather than overwrite it._
