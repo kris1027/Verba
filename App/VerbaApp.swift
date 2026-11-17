@@ -8,6 +8,11 @@ struct VerbaApp: App {
     /// before any screen reads from it.
     private let launchResult = AppEnvironment.launch()
 
+    private var environment: AppEnvironment? {
+        if case .ready(let environment) = launchResult { return environment }
+        return nil
+    }
+
     var body: some Scene {
         WindowGroup {
             switch launchResult {
@@ -24,6 +29,7 @@ struct VerbaApp: App {
 
         Settings {
             SettingsView()
+                .environment(\.claudeConnection, environment?.claude)
         }
     }
 }
