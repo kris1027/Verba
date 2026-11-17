@@ -68,5 +68,6 @@ MCP servers: XcodeBuildMCP (recommended), Xcode `mcpbridge` (recommended), apple
 ## Context files
 
 - [Packages/VerbaKit/Sources/Persistence/AGENTS.md](Packages/VerbaKit/Sources/Persistence/AGENTS.md) (GRDB database, migrations, repositories)
+- [Packages/VerbaKit/Sources/ClaudeBridge/AGENTS.md](Packages/VerbaKit/Sources/ClaudeBridge/AGENTS.md) (runs the `claude` CLI: status checks, versioned prompts, lesson calls)
 
 _Drafted by /audit from the repo, worth a quick human pass. Edit freely: once a line stops matching this draft, later runs treat it as curated and will flag rather than overwrite it._
