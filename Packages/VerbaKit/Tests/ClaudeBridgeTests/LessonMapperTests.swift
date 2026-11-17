@@ -52,6 +52,15 @@ struct LessonMapperTests {
         #expect(none.model == nil)
     }
 
+    @Test func optionalFieldsOfAnotherTypeBecomeNilButAStringStatusStillCounts() throws {
+        let stdout = #"{"type":"result","is_error":true,"api_error_status":"429","result":7,"modelUsage":[1]}"#
+        let decoded = try CLIResult.decode(stdout: Data(stdout.utf8))
+        #expect(decoded.apiErrorStatus == 429)
+        #expect(decoded.result == nil)
+        #expect(decoded.modelUsage == nil)
+        #expect(decoded.isUsageLimit(exitStatus: 1))
+    }
+
     static func badReply(_ name: String) -> [String: Any]? {
         let sample = SampleLesson.self
         let base = [sample.choice, sample.fillBlank, sample.reorder, sample.match]

@@ -1,3 +1,4 @@
+import Core
 import Foundation
 
 /// The single JSON object `claude -p --output-format json` prints. Unknown fields are ignored.
@@ -43,10 +44,25 @@ struct CLIResult: Decodable, Sendable, Hashable {
         type = try container.decode(String.self, forKey: .type)
         subtype = try container.decodeIfPresent(String.self, forKey: .subtype)
         isError = try container.decodeIfPresent(Bool.self, forKey: .isError) ?? false
-        apiErrorStatus = try? container.decodeIfPresent(Int.self, forKey: .apiErrorStatus)
-        result = try? container.decodeIfPresent(String.self, forKey: .result)
+        apiErrorStatus =
+            Self.optional(Int.self, .apiErrorStatus, in: container)
+            ?? Self.optional(String.self, .apiErrorStatus, in: container).flatMap { Int($0) }
+        result = Self.optional(String.self, .result, in: container)
         structuredOutput = try container.decodeIfPresent(JSONValue.self, forKey: .structuredOutput)
-        modelUsage = try? container.decodeIfPresent([String: ModelUsage].self, forKey: .modelUsage)
+        modelUsage = Self.optional([String: ModelUsage].self, .modelUsage, in: container)
+    }
+
+    /// Reads a field the call can do without. A value of another type becomes nil, but never silently:
+    /// the field name goes to the log, so a CLI format change shows up.
+    private static func optional<T: Decodable>(
+        _ type: T.Type, _ key: CodingKeys, in container: KeyedDecodingContainer<CodingKeys>
+    ) -> T? {
+        do {
+            return try container.decodeIfPresent(type, forKey: key)
+        } catch {
+            Log.bridge.warning("claude result field \(key.stringValue, privacy: .public) has an unexpected type")
+            return nil
+        }
     }
 
     enum DecodeFailure: Error, CustomStringConvertible {
@@ -145,11 +161,18 @@ enum JSONValue: Codable, Sendable, Hashable {
         try JSONDecoder().decode(type, from: JSONEncoder().encode(self))
     }
 
-    /// The value as compact JSON with sorted keys.
+    /// The value as compact JSON with sorted keys. Only a non finite number can fail to encode, and decoded
+    /// JSON never holds one; if it ever does, the failure is logged and the text is empty.
     var sortedJSONString: String {
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.sortedKeys, .withoutEscapingSlashes]
-        guard let data = try? encoder.encode(self) else { return "" }
-        return String(bytes: data, encoding: .utf8) ?? ""
+        do {
+            // JSONEncoder always writes UTF-8, so the conversion cannot fail.
+            return String(bytes: try encoder.encode(self), encoding: .utf8) ?? ""
+        } catch {
+            Log.bridge.error(
+                "structured_output could not be encoded again: \(String(describing: error), privacy: .private)")
+            return ""
+        }
     }
 }
