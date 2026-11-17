@@ -2,17 +2,11 @@ import Core
 import Foundation
 
 /// What the login shell lookup found: the `claude` path and the login shell's `PATH`.
-public struct ShellLookup: Sendable, Hashable {
+struct ShellLookup: Sendable, Hashable {
     /// The `claude` program the login shell found.
-    public let path: URL
+    let path: URL
     /// The login shell's `PATH`, used to build the child's `PATH`.
-    public let loginPATH: String
-
-    /// Creates a lookup result.
-    public init(path: URL, loginPATH: String) {
-        self.path = path
-        self.loginPATH = loginPATH
-    }
+    let loginPATH: String
 }
 
 /// Where `claude` was found, and the login shell's `PATH` when the shell lookup found it.

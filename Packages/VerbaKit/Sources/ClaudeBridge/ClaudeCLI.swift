@@ -11,10 +11,10 @@ public actor ClaudeCLI: ClaudeConnection, LessonWriter {
     static let minimumVersion = CLIVersion(major: 2, minor: 1, patch: 325)
     /// The limit for `claude --version` and `claude auth status`.
     static let statusTimeLimit: Duration = .seconds(10)
-    /// The limit for each lesson attempt, in seconds.
-    static let lessonTimeLimit = 120
-    /// The limit for the test prompt, in seconds.
-    static let testTimeLimit = 30
+    /// The limit for each lesson attempt.
+    static let lessonTimeLimit: Duration = .seconds(120)
+    /// The limit for the test prompt.
+    static let testTimeLimit: Duration = .seconds(30)
     /// Used when the login shell lookup did not run.
     static let fallbackPATH = ["/opt/homebrew/bin", "/usr/local/bin"]
 
@@ -33,7 +33,7 @@ public actor ClaudeCLI: ClaudeConnection, LessonWriter {
     /// A ready `claude`: where it is, its version, and the login shell `PATH` if the shell found it.
     struct ResolvedCLI: Sendable, Hashable {
         var path: URL
-        var version: String
+        var version: CLIVersion
         var loginPATH: String?
     }
 
@@ -71,7 +71,7 @@ public actor ClaudeCLI: ClaudeConnection, LessonWriter {
     public func status(refresh: Bool) async -> ClaudeStatus {
         if refresh { invalidate() }
         switch await resolve() {
-        case .success(let resolved): return .ready(version: resolved.version, path: resolved.path)
+        case .success(let resolved): return .ready(version: resolved.version.description, path: resolved.path)
         case .failure(let problem): return .problem(problem)
         }
     }
@@ -108,7 +108,7 @@ public actor ClaudeCLI: ClaudeConnection, LessonWriter {
     /// Sends "Reply with the word ready." on `haiku` with a 30 second limit.
     public func sendTestPrompt() async throws(ClaudeError) -> TestReply {
         let prompt = try Prompt.load("test-v1")
-        let outcome = try await call(prompt, model: .haiku, timeLimitSeconds: Self.testTimeLimit)
+        let outcome = try await call(prompt, model: .haiku, timeLimit: Self.testTimeLimit)
         if let problem = ReplyProblem(testReply: outcome.result) {
             Log.bridge.error("Unusable test reply: \(outcome.result.rawReply, privacy: .private)")
             throw .invalidReply(reason: "test reply \(problem.reason)")
@@ -123,7 +123,7 @@ public actor ClaudeCLI: ClaudeConnection, LessonWriter {
         var lastProblem = ReplyProblem.noStructuredOutput
         for attempt in 1...2 {
             if Task.isCancelled { throw .cancelled }
-            let outcome = try await call(prompt, model: model, timeLimitSeconds: Self.lessonTimeLimit)
+            let outcome = try await call(prompt, model: model, timeLimit: Self.lessonTimeLimit)
             switch LessonMapper.map(outcome.result, request: request, prompt: prompt, durationMs: outcome.durationMs) {
             case .success(let mapped):
                 for position in mapped.unfairChoicePositions {
@@ -149,7 +149,7 @@ public actor ClaudeCLI: ClaudeConnection, LessonWriter {
 
     /// One structured CLI call with the AC-5 flags, classified in AC-11 order.
     private func call(
-        _ prompt: Prompt, model: ClaudeModel, timeLimitSeconds: Int
+        _ prompt: Prompt, model: ClaudeModel, timeLimit: Duration
     ) async throws(ClaudeError) -> CallOutcome {
         if Task.isCancelled { throw .cancelled }
         let resolved = try await resolve().get()
@@ -162,7 +162,7 @@ public actor ClaudeCLI: ClaudeConnection, LessonWriter {
             standardInput: prompt.user,
             workingDirectory: paths.claudeWork,
             environment: childEnvironment(for: CLILocation(url: resolved.path, loginPATH: resolved.loginPATH)),
-            timeLimit: .seconds(timeLimitSeconds))
+            timeLimit: timeLimit)
         Log.bridge.info(
             "Running claude -p (\(prompt.version, privacy: .public), model \(model.rawValue, privacy: .public))")
         Log.bridge.debug("Prompt: \(prompt.user, privacy: .private)")
@@ -185,8 +185,9 @@ public actor ClaudeCLI: ClaudeConnection, LessonWriter {
                 Log.bridge.info("Claude call cancelled")
                 throw .cancelled
             case .timedOut:
-                Log.bridge.error("Claude call timed out after \(timeLimitSeconds, privacy: .public) s")
-                throw .timedOut(seconds: timeLimitSeconds)
+                let seconds = Int(timeLimit.components.seconds)
+                Log.bridge.error("Claude call timed out after \(seconds, privacy: .public) s")
+                throw .timedOut(seconds: seconds)
             case .launchFailed(let detail), .inputNotWritten(let detail):
                 throw await failure(detail, stderr: "", usedGeneration: usedGeneration)
             }

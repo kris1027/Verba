@@ -11,7 +11,7 @@ extension ClaudeCLI {
             try prepareWorkFolder()
             let version = try await readVersion(location)
             try await requireSignedIn(location)
-            Log.bridge.info("Claude Code \(version, privacy: .public) is ready")
+            Log.bridge.info("Claude Code \(version.description, privacy: .public) is ready")
             Log.bridge.info("Claude Code path: \(location.url.path(percentEncoded: false), privacy: .private)")
             return .success(ResolvedCLI(path: location.url, version: version, loginPATH: location.loginPATH))
         } catch {
@@ -20,7 +20,7 @@ extension ClaudeCLI {
         }
     }
 
-    nonisolated func readVersion(_ location: CLILocation) async throws(ClaudeError) -> String {
+    nonisolated func readVersion(_ location: CLILocation) async throws(ClaudeError) -> CLIVersion {
         let output: CommandOutput
         do {
             output = try await runner.run(
@@ -39,7 +39,7 @@ extension ClaudeCLI {
         guard version >= Self.minimumVersion else {
             throw .versionTooOld(found: version.description, minimum: Self.minimumVersion.description)
         }
-        return version.description
+        return version
     }
 
     nonisolated func requireSignedIn(_ location: CLILocation) async throws(ClaudeError) {
