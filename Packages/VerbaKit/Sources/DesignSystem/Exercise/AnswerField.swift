@@ -59,11 +59,7 @@ public struct AnswerField: View {
             }
         }
         .padding(Theme.Spacing.m)
-        .background(Theme.raised, in: .rect(cornerRadius: Theme.Shape.cornerRadius))
-        .overlay {
-            RoundedRectangle(cornerRadius: Theme.Shape.cornerRadius)
-                .strokeBorder(Theme.controlBorder, lineWidth: Theme.Shape.borderWidth)
-        }
+        .verbaBox(fill: Theme.raised, border: Theme.controlBorder)
         .focusBorder(isFocused && !isLocked)
         .locked(isLocked)
         .takesExerciseFocus(isLocked: isLocked) { isFocused = true }

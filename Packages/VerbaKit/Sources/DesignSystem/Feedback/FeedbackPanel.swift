@@ -113,11 +113,7 @@ public struct FeedbackPanel: View {
         content()
             .padding(Theme.Spacing.m)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Theme.raised, in: .rect(cornerRadius: Theme.Shape.cornerRadius))
-            .overlay {
-                RoundedRectangle(cornerRadius: Theme.Shape.cornerRadius)
-                    .strokeBorder(border, lineWidth: Theme.Shape.borderWidth)
-            }
+            .verbaBox(fill: Theme.raised, border: border)
     }
 
     private func resultValue(tone: FeedbackTone, correctAnswer: String?, explanation: String?) -> String {

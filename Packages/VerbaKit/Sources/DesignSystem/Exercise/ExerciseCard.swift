@@ -65,11 +65,7 @@ public struct ExerciseCard<Input: View>: View {
         }
         .padding(Theme.Spacing.l)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Theme.surface, in: .rect(cornerRadius: Theme.Shape.cornerRadius))
-        .overlay {
-            RoundedRectangle(cornerRadius: Theme.Shape.cornerRadius)
-                .strokeBorder(Theme.hairline, lineWidth: Theme.Shape.borderWidth)
-        }
+        .verbaBox(fill: Theme.surface, border: Theme.hairline)
         .accessibilityElement(children: .contain)
         .onAppear { focusRequest += 1 }
         .onChange(of: position) { focusRequest += 1 }

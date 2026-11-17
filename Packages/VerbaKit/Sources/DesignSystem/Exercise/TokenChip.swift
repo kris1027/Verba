@@ -29,11 +29,7 @@ struct TokenChip: View {
         }
         .padding(.vertical, Theme.Spacing.xs)
         .padding(.horizontal, Theme.Spacing.m)
-        .background(isFilled ? Theme.raised : Theme.surface, in: .rect(cornerRadius: Theme.Shape.cornerRadius))
-        .overlay {
-            RoundedRectangle(cornerRadius: Theme.Shape.cornerRadius)
-                .strokeBorder(isPicked ? Theme.accent : Theme.controlBorder, lineWidth: Theme.Shape.borderWidth)
-        }
+        .verbaBox(fill: isFilled ? Theme.raised : Theme.surface, border: isPicked ? Theme.accent : Theme.controlBorder)
         .focusBorder(isFocused)
         .contentShape(.rect)
     }

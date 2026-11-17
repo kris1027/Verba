@@ -12,7 +12,7 @@ Verba's look in one domain free library: color, type, spacing, shape and motion 
 | `Theme/` | `Theme` colors as `ThemeColor` styles, spacing, shape, motion, reading width, `.themeFont(_:)`, `.verbaContentFont()`, the `\.textSize` environment entry |
 | `Window/` | `Appearance.applyDark()` and `.verbaWindowStyle()` (dark scheme, sage tint, text size from `verba.textSize`) |
 | `Commands/` | `TextSizeCommands` (⌘+ or ⌘=, ⌘− ⌘0), `PrintCommands` (⌘P), `DebugCommands` (⌥⌘D) |
-| `Components/` | `TerminalLabel`, button styles, `BlinkingCursor`, `.focusBorder(_:)` |
+| `Components/` | `TerminalLabel`, button styles, `BlinkingCursor`, `.focusBorder(_:)`, `.verbaBox(fill:border:)` (the shared rounded fill and border) |
 | `Lesson/`, `Markdown/` | `ReadingColumn`, `LessonHeader`, `MarkdownDocument` (parse to blocks), `MarkdownText` |
 | `Exercise/` | `ExerciseCard`, `ExerciseAction`, `ChoiceList`, `AnswerField`, `ReorderBoard`, `MatchBoard`, `MatchPair`, `.locked(_:)`, the focus request helpers |
 | `Feedback/` | `FeedbackTone`, `FeedbackState`, `FeedbackPanel` |

@@ -99,11 +99,7 @@ private struct ChoiceRow: View {
         }
         .padding(.vertical, Theme.Spacing.s)
         .padding(.horizontal, Theme.Spacing.m)
-        .background(isSelected ? Theme.raised : Theme.surface, in: .rect(cornerRadius: Theme.Shape.cornerRadius))
-        .overlay {
-            RoundedRectangle(cornerRadius: Theme.Shape.cornerRadius)
-                .strokeBorder(border, lineWidth: Theme.Shape.borderWidth)
-        }
+        .verbaBox(fill: isSelected ? Theme.raised : Theme.surface, border: border)
         .contentShape(.rect)
         .onTapGesture(perform: select)
         .accessibilityElement(children: .ignore)

@@ -46,14 +46,7 @@ private struct VerbaButtonBody: View {
             .foregroundStyle(foreground)
             .padding(.vertical, Theme.Spacing.s)
             .padding(.horizontal, Theme.Spacing.l)
-            .background {
-                RoundedRectangle(cornerRadius: Theme.Shape.cornerRadius)
-                    .fill(fill)
-            }
-            .overlay {
-                RoundedRectangle(cornerRadius: Theme.Shape.cornerRadius)
-                    .strokeBorder(border, lineWidth: Theme.Shape.borderWidth)
-            }
+            .verbaBox(fill: fill, border: border)
             .opacity(configuration.isPressed ? Theme.Shape.pressedOpacity : 1)
             .contentShape(.rect)
             .focusBorder(isFocused)

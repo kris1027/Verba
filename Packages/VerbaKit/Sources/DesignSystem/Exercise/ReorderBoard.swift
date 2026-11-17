@@ -40,11 +40,7 @@ public struct ReorderBoard: View {
             }
             .frame(minHeight: Theme.Spacing.xxl)
             .padding(Theme.Spacing.s)
-            .background(Theme.raised, in: .rect(cornerRadius: Theme.Shape.cornerRadius))
-            .overlay {
-                RoundedRectangle(cornerRadius: Theme.Shape.cornerRadius)
-                    .strokeBorder(Theme.hairline, lineWidth: Theme.Shape.borderWidth)
-            }
+            .verbaBox(fill: Theme.raised, border: Theme.hairline)
 
             if !bank.isEmpty {
                 TerminalLabel("Words")
