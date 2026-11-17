@@ -42,6 +42,23 @@ extension Theme {
         }
     }
 
+    /// Fixed print sizes in points. Paper does not follow the screen text size; `design.md`
+    /// lists the same values (`DesignDocTests` compares them).
+    nonisolated public enum Print {
+        /// Lesson title, New York bold.
+        public static let title: Double = 20
+        /// Headings, New York bold.
+        public static let heading: Double = 14
+        /// Body text, New York.
+        public static let body: Double = 11
+        /// Code, SF Mono.
+        public static let code: Double = 10
+        /// Labels, SF Mono.
+        public static let label: Double = 9
+        /// Page margin on every side.
+        public static let margin: Double = 72
+    }
+
     /// The width of the reading column at default text size, in points.
     nonisolated public static let baseReadingWidth: Double = 680
 

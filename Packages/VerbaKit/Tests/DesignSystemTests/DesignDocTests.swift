@@ -3,7 +3,7 @@ import Foundation
 import Testing
 
 /// Keeps the root `design.md` honest: its palette table must list every token with the same hex
-/// values as the code.
+/// values as the code, and its print style must state the code's print sizes.
 struct DesignDocTests {
     private struct Row {
         let standard: String
@@ -48,5 +48,21 @@ struct DesignDocTests {
         #expect(row.standard == Palette.standard[token]?.hexString)
         #expect(row.increasedContrast == Palette.increasedContrast[token]?.hexString)
         #expect(row.print == Palette.print[token]?.hexString)
+    }
+
+    @Test func printSizesMatchTheCode() throws {
+        let text = try String(contentsOf: Self.designDoc, encoding: .utf8)
+        func points(_ value: Double) -> String { String(Int(value)) }
+        let expected = [
+            "\(points(Theme.Print.margin)) point margins",
+            "title \(points(Theme.Print.title)) pt",
+            "headings \(points(Theme.Print.heading)) pt",
+            "body \(points(Theme.Print.body)) pt",
+            "code \(points(Theme.Print.code)) pt",
+            "labels \(points(Theme.Print.label)) pt",
+        ]
+        for phrase in expected {
+            #expect(text.contains(phrase), "design.md does not say \"\(phrase)\"")
+        }
     }
 }

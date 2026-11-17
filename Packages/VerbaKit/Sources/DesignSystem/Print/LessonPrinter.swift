@@ -4,23 +4,13 @@ import AppKit
 /// no backgrounds. Paper sizes do not follow the screen text size. The standard print panel
 /// offers Save as PDF, which keeps the text selectable.
 public enum LessonPrinter {
-    /// Fixed print sizes, in points.
-    nonisolated enum Size {
-        static let title: Double = 20
-        static let heading: Double = 14
-        static let body: Double = 11
-        static let code: Double = 10
-        static let label: Double = 9
-        static let margin: Double = 72
-    }
-
     /// Shows the print panel for a lesson.
     public static func print(_ document: LessonPrintDocument) {
         guard let printInfo = NSPrintInfo.shared.copy() as? NSPrintInfo else { return }
-        printInfo.topMargin = Size.margin
-        printInfo.bottomMargin = Size.margin
-        printInfo.leftMargin = Size.margin
-        printInfo.rightMargin = Size.margin
+        printInfo.topMargin = Theme.Print.margin
+        printInfo.bottomMargin = Theme.Print.margin
+        printInfo.leftMargin = Theme.Print.margin
+        printInfo.rightMargin = Theme.Print.margin
         printInfo.horizontalPagination = .fit
         printInfo.verticalPagination = .automatic
         printInfo.isVerticallyCentered = false
@@ -47,12 +37,13 @@ public enum LessonPrinter {
     /// The whole lesson as print styled text: title, topic, explanation, then every exercise.
     public static func attributedString(for document: LessonPrintDocument) -> NSAttributedString {
         var builder = PrintTextBuilder()
-        builder.add(document.title, font: .serif(Size.title, bold: true), color: .text, spaceAfter: 4)
-        builder.add(document.topic.uppercased(), font: .mono(Size.label), color: .textSecondary, spaceAfter: 14)
+        builder.add(document.title, font: .serif(Theme.Print.title, bold: true), color: .text, spaceAfter: 4)
+        builder.add(document.topic.uppercased(), font: .mono(Theme.Print.label), color: .textSecondary, spaceAfter: 14)
         for block in MarkdownDocument(markdown: document.explanationMarkdown).blocks {
             builder.add(block)
         }
-        builder.add("Exercises", font: .serif(Size.heading, bold: true), color: .text, spaceBefore: 10, spaceAfter: 6)
+        builder.add(
+            "Exercises", font: .serif(Theme.Print.heading, bold: true), color: .text, spaceBefore: 10, spaceAfter: 6)
         for exercise in document.exercises {
             builder.add(exercise)
         }
@@ -107,12 +98,12 @@ private struct PrintTextBuilder {
     }
 
     mutating func add(_ block: MarkdownBlock) {
-        let body = NSFont.serif(LessonPrinter.Size.body)
+        let body = NSFont.serif(Theme.Print.body)
         switch block {
         case .paragraph(let text):
             add(inline(text, base: body), font: body, color: .text)
         case .heading(_, let text):
-            let heading = NSFont.serif(LessonPrinter.Size.heading, bold: true)
+            let heading = NSFont.serif(Theme.Print.heading, bold: true)
             add(inline(text, base: heading), font: heading, color: .text, spaceBefore: 8, spaceAfter: 4)
         case .list(let items):
             for item in items {
@@ -127,7 +118,7 @@ private struct PrintTextBuilder {
                 add(inline(paragraph, base: body), font: body, color: .textSecondary, indent: 14)
             }
         case .code(let code):
-            add(code, font: .mono(LessonPrinter.Size.code), color: .text, indent: 14)
+            add(code, font: .mono(Theme.Print.code), color: .text, indent: 14)
         case .table(let table):
             addTable(table, font: body)
         case .plain(let text):
@@ -136,8 +127,8 @@ private struct PrintTextBuilder {
     }
 
     mutating func add(_ exercise: PrintedExercise) {
-        let body = NSFont.serif(LessonPrinter.Size.body)
-        let label = NSFont.mono(LessonPrinter.Size.label)
+        let body = NSFont.serif(Theme.Print.body)
+        let label = NSFont.mono(Theme.Print.label)
         let number = exercise.number < 10 ? "0\(exercise.number)" : "\(exercise.number)"
         add(
             "\(number) · \(exercise.kindLabel.uppercased())", font: label, color: .textSecondary, spaceBefore: 10,
@@ -149,7 +140,7 @@ private struct PrintTextBuilder {
             add("Not answered", font: body, color: .textSecondary, spaceAfter: 2)
         }
         if let tone = exercise.tone {
-            add(tone.title, font: .serif(LessonPrinter.Size.body, bold: true), color: tone.colorToken, spaceAfter: 2)
+            add(tone.title, font: .serif(Theme.Print.body, bold: true), color: tone.colorToken, spaceAfter: 2)
         }
         if exercise.tone != .correct, let correctAnswer = exercise.correctAnswer {
             add("Answer: \(correctAnswer)", font: body, color: .text, spaceAfter: 2)
@@ -167,7 +158,7 @@ private struct PrintTextBuilder {
 
     /// A table as tab stopped rows: columns as wide as their widest cell, a rule under the header.
     private mutating func addTable(_ table: MarkdownTable, font: NSFont) {
-        let bold = NSFont.serif(LessonPrinter.Size.body, bold: true)
+        let bold = NSFont.serif(Theme.Print.body, bold: true)
         let gap = 16.0
         var widths = Array(repeating: 0.0, count: table.columnCount)
         for (row, rowFont) in [(table.header, bold)] + table.rows.map({ ($0, font) }) {
@@ -211,7 +202,7 @@ private struct PrintTextBuilder {
             var font = base
             if let intent = run.inlinePresentationIntent {
                 if intent.contains(.code) {
-                    font = .mono(LessonPrinter.Size.code)
+                    font = .mono(Theme.Print.code)
                 } else {
                     var traits = base.fontDescriptor.symbolicTraits
                     if intent.contains(.stronglyEmphasized) { traits.insert(.bold) }
