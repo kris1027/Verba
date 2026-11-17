@@ -61,11 +61,12 @@ enum LessonMapper {
         guard exercise.explanation.count <= Limits.exerciseExplanation else {
             throw .textTooLong(field: "\(label) explanation", limit: Limits.exerciseExplanation)
         }
-        let explanation = exercise.explanation.trimmingCharacters(in: .whitespacesAndNewlines)
+        // AC-7: blank becomes nil; anything else is kept as received, like every other text.
+        let isBlank = exercise.explanation.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         let parts = try makeParts(exercise, position: position)
         return NewExercise(
             kind: coreKind(exercise.kind), prompt: exercise.prompt,
-            explanation: explanation.isEmpty ? nil : explanation,
+            explanation: isBlank ? nil : exercise.explanation,
             parts: parts)
     }
 

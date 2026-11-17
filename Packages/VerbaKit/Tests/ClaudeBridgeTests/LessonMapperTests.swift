@@ -36,6 +36,13 @@ struct LessonMapperTests {
         #expect(mapped.lesson.generation.durationMs == 42)
     }
 
+    @Test func nonBlankExplanationIsKeptAsReceived() throws {
+        let padded = SampleLesson.replacing(SampleLesson.choice, "explanation", with: " Hola means hello.\n")
+        let reply = SampleLesson.reply([padded, SampleLesson.fillBlank, SampleLesson.reorder, SampleLesson.match])
+        let mapped = try map(reply).get()
+        #expect(mapped.lesson.lesson.exercises[0].explanation == " Hola means hello.\n")
+    }
+
     @Test func emptyResultTextSavesStructuredOutputWithSortedKeys() throws {
         let mapped = try map(
             SampleLesson.reply([SampleLesson.reorder, SampleLesson.reorder, SampleLesson.reorder, SampleLesson.reorder]
