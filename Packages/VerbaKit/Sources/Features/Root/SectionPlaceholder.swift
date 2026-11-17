@@ -1,11 +1,14 @@
 import DesignSystem
 import SwiftUI
 
-/// The empty state of a sidebar section that a later slice fills. It uses Verba's type tokens,
-/// so it follows the text size like every content area text.
+/// The empty state of a sidebar section that a later slice fills, or of the app when no section
+/// is selected. It uses Verba's type tokens, so it follows the text size like every content area text.
 struct SectionPlaceholder: View {
-    let title: String
-    let systemImage: String
+    /// The section to stand in for; `nil` shows Verba itself.
+    let item: SidebarItem?
+
+    private var title: String { item?.title ?? "Verba" }
+    private var systemImage: String { item?.systemImage ?? "character.book.closed" }
 
     var body: some View {
         VStack(spacing: Theme.Spacing.m) {
@@ -25,6 +28,6 @@ struct SectionPlaceholder: View {
 }
 
 #Preview {
-    SectionPlaceholder(title: "Lessons", systemImage: "book")
+    SectionPlaceholder(item: .lessons)
         .background(Theme.background)
 }

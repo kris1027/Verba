@@ -19,10 +19,10 @@ public struct RootView: View {
         } detail: {
             Group {
                 if let selection {
-                    SectionPlaceholder(title: selection.title, systemImage: selection.systemImage)
+                    SectionPlaceholder(item: selection)
                         .navigationTitle(selection.title)
                 } else {
-                    SectionPlaceholder(title: "Verba", systemImage: "character.book.closed")
+                    SectionPlaceholder(item: nil)
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
