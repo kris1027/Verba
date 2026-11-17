@@ -113,6 +113,30 @@ struct SubprocessRunnerTests {
     }
 
     @Test(.timeLimit(.minutes(1)))
+    func groupThatIgnoresSIGTERMIsKilledTwoSecondsLater() async throws {
+        let stubborn = try folder.script(
+            "stubborn",
+            """
+            trap '' TERM
+            echo $$ > "\(folder.url.path)/pid"
+            sleep 300 &
+            echo $! > "\(folder.url.path)/child"
+            wait
+            """)
+        let clock = ContinuousClock()
+        let start = clock.now
+        await #expect(throws: CommandError.timedOut) {
+            try await runner.run(command(stubborn, timeLimit: .seconds(1)))
+        }
+        let elapsed = clock.now - start
+        #expect(elapsed >= .seconds(3) && elapsed < .seconds(10))
+        let pid = try #require(try await folder.waitForPID("pid"))
+        let child = try #require(try await folder.waitForPID("child"))
+        #expect(!isAlive(pid))
+        try await expectGone(child)
+    }
+
+    @Test(.timeLimit(.minutes(1)))
     func cancellingTheTaskStopsTheProcess() async throws {
         let sleeper = try folder.script("sleeper", "echo $$ > \"\(folder.url.path)/pid\"; exec sleep 300")
         let runner = runner

@@ -62,6 +62,8 @@ struct SubprocessRunner: CommandRunner {
     private func launch(_ command: Command) async -> Result<CommandOutput, CommandError> {
         var options = PlatformOptions()
         options.createSession = true
+        // swift-subprocess always appends a final SIGKILL, sent to the group when the last step was
+        // (Teardown.swift), so this is SIGTERM to the group, then SIGKILL to the group 2 seconds later.
         options.teardownSequence = [
             .send(signal: .terminate, toProcessGroup: true, allowedDurationToNextStep: .seconds(2))
         ]
