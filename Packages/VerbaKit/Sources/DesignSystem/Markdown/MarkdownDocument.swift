@@ -1,4 +1,5 @@
 import Foundation
+import os
 
 /// A lesson explanation parsed from Markdown into blocks.
 ///
@@ -8,6 +9,8 @@ nonisolated public struct MarkdownDocument: Equatable, Sendable {
     /// The blocks in reading order.
     public let blocks: [MarkdownBlock]
 
+    private static let log = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.verba.app", category: "design")
+
     /// Parses Markdown text. Blank text gives no blocks.
     public init(markdown: String) {
         guard !markdown.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
@@ -16,7 +19,12 @@ nonisolated public struct MarkdownDocument: Equatable, Sendable {
         }
         let options = AttributedString.MarkdownParsingOptions(
             interpretedSyntax: .full, failurePolicy: .returnPartiallyParsedIfPossible)
-        guard let parsed = try? AttributedString(markdown: markdown, options: options) else {
+        let parsed: AttributedString
+        do {
+            parsed = try AttributedString(markdown: markdown, options: options)
+        } catch {
+            Self.log.error(
+                "Markdown parse failed, showing \(markdown.count) characters as plain text: \(error, privacy: .public)")
             blocks = [.plain(markdown)]
             return
         }

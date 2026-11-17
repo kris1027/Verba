@@ -21,7 +21,7 @@ Verba's look in one domain free library: color, type, spacing, shape and motion 
 
 ## Conventions
 
-- Imports SwiftUI, Foundation, and AppKit only; AppKit only for the print path and `Appearance`. The SwiftLint rule `design_system_is_domain_free` fails on any `Core`, `Persistence`, `ClaudeBridge`, `GRDB`, or `Subprocess` import.
+- Imports SwiftUI, Foundation, AppKit, and `os` (logging) only; AppKit only for the print path and `Appearance`. The SwiftLint rule `design_system_is_domain_free` fails on any `Core`, `Persistence`, `ClaudeBridge`, `GRDB`, or `Subprocess` import.
 - Components take plain values, bindings, and closures; the caller owns all state. `Features` maps domain values first (`Grade` to `FeedbackTone`, shuffled parts to strings, a typed error to its message).
 - Never reorder options, tokens, or match items; show them in the order passed (the app shuffles in `Core`).
 - No literal colors, font sizes, or radii: use `Theme`. Every font goes through `.themeFont(_:)`, or sits under `.verbaContentFont()`, so text size reaches it. A bare `.font(.body)` in a content area is a bug.
