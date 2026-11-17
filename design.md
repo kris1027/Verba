@@ -138,7 +138,7 @@ These are described here so later slices match; they are built with their featur
 | Up, Down | choice list | moves the selection |
 | Return | any exercise | Check, then Next |
 | Option Return | translate field | inserts a line break |
-| Tab, Shift Tab | everywhere | moves through every control in reading order (sage focus border) |
+| Tab, Shift Tab | everywhere | moves through every control in reading order (sage focus border); buttons join the order only when System Settings › Keyboard › Keyboard navigation is on, as everywhere on macOS, and Return and Esc reach them either way |
 | Space or click | reorder and match items | places or removes a word; picks, pairs, or unpairs an item |
 | Esc | while checking | cancels the check (does nothing otherwise) |
 | ⌘+ (or ⌘=), ⌘−, ⌘0 | View menu | Bigger, Smaller, Actual Size |
