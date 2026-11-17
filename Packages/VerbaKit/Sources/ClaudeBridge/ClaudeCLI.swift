@@ -19,9 +19,9 @@ public actor ClaudeCLI: ClaudeConnection, LessonWriter {
     static let fallbackPATH = ["/opt/homebrew/bin", "/usr/local/bin"]
 
     let paths: AppPaths
-    private let runner: any CommandRunner
-    private let preferences: @Sendable () -> ClaudePreferences
-    private let locator: CLILocator
+    let runner: any CommandRunner
+    let preferences: @Sendable () -> ClaudePreferences
+    let locator: CLILocator
     let baseEnvironment: [String: String]
 
     private var cached: ResolvedCLI?
@@ -99,74 +99,6 @@ public actor ClaudeCLI: ClaudeConnection, LessonWriter {
         guard started == generation else { return }
         inFlight = nil
         if case .success(let resolved) = result { cached = resolved }
-    }
-
-    private nonisolated func check() async -> Result<ResolvedCLI, ClaudeError> {
-        do throws(ClaudeError) {
-            let location = try await locator.locate(customPath: preferences().cliPath)
-            try prepareWorkFolder()
-            let environment = childEnvironment(for: location)
-            let version = try await readVersion(location, environment: environment)
-            try await requireSignedIn(location, environment: environment)
-            Log.bridge.info("Claude Code \(version, privacy: .public) is ready")
-            Log.bridge.info("Claude Code path: \(location.url.path(percentEncoded: false), privacy: .private)")
-            return .success(ResolvedCLI(path: location.url, version: version, loginPATH: location.loginPATH))
-        } catch {
-            Log.bridge.error("Claude status check found a problem: \(error.caseName, privacy: .public)")
-            return .failure(error)
-        }
-    }
-
-    private nonisolated func readVersion(
-        _ location: CLILocation, environment: [String: String]
-    ) async throws(ClaudeError) -> String {
-        let output: CommandOutput
-        do {
-            output = try await runner.run(
-                statusCommand(location, ["--version"], environment: environment))
-        } catch {
-            Log.bridge.error("claude --version did not finish: \(error.caseName, privacy: .public)")
-            Log.bridge.error("claude --version error detail: \(String(describing: error), privacy: .private)")
-            throw .versionUnreadable
-        }
-        guard output.exitStatus == 0,
-            let version = CLIVersion(firstMatchIn: String(bytes: output.stdout, encoding: .utf8) ?? "")
-        else {
-            Log.bridge.error("claude --version exited with status \(output.exitStatus, privacy: .public)")
-            throw .versionUnreadable
-        }
-        guard version >= Self.minimumVersion else {
-            throw .versionTooOld(found: version.description, minimum: Self.minimumVersion.description)
-        }
-        return version.description
-    }
-
-    private nonisolated func requireSignedIn(
-        _ location: CLILocation, environment: [String: String]
-    ) async throws(ClaudeError) {
-        let output: CommandOutput
-        do {
-            output = try await runner.run(
-                statusCommand(location, ["auth", "status", "--json"], environment: environment))
-        } catch {
-            throw .failed(reason: "claude auth status did not finish: \(error)")
-        }
-        // `loggedIn` is read whenever stdout is JSON, whatever the exit status.
-        switch AuthStatus.loggedIn(from: output.stdout) {
-        case true?: return
-        case false?: throw .notLoggedIn
-        case nil:
-            Log.bridge.error("claude auth status printed no loggedIn: \(output.stderrText, privacy: .private)")
-            throw .failed(reason: "claude auth status printed no loggedIn (exit \(output.exitStatus))")
-        }
-    }
-
-    private nonisolated func statusCommand(
-        _ location: CLILocation, _ arguments: [String], environment: [String: String]
-    ) -> Command {
-        Command(
-            executable: location.url, arguments: arguments, standardInput: nil, workingDirectory: paths.claudeWork,
-            environment: environment, timeLimit: Self.statusTimeLimit)
     }
 
     // MARK: - Calls
