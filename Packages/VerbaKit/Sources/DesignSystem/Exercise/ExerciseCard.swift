@@ -115,6 +115,7 @@ public struct ExerciseCard<Input: View>: View {
     private var keyHint: String {
         switch (primaryAction, feedback.phase) {
         case (_, .checking): "Esc · cancel"
+        case (_, .failed): "Return · try again"
         case (.next, _): "Return · next"
         default: "Return · check"
         }

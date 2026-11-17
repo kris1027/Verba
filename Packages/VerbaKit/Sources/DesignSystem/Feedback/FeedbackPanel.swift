@@ -69,8 +69,10 @@ public struct FeedbackPanel: View {
                         .themeFont(.readingBody)
                         .foregroundStyle(Theme.text)
                         .fixedSize(horizontal: false, vertical: true)
+                    // The card's Check is disabled after a failure, so Return retries.
                     Button("Try Again", action: retry)
                         .buttonStyle(.verbaSecondary)
+                        .keyboardShortcut(isLive ? .defaultAction : nil)
                 }
             }
             .accessibilityElement(children: .ignore)

@@ -16,7 +16,7 @@ Build and open `Verba Dev.app`, then Debug › Design Gallery (⌥⌘D).
 - [ ] Choice exercise, keyboard only: focus lands on the options; press 2 → option 2 selected (`›` and sage border); Return → `Checking…` with blinking cursor, then `✓ Correct` with the explanation inline; Return → Next resets → AC-8, AC-9
 - [ ] Pick option 1 instead → `✗ Not quite`, the answer `es` shown, the chosen row marked wrong and row 2 marked correct, three tones visibly different from sage → AC-9
 - [ ] Fill in and translate: Return checks; in translate Option Return inserts a new line → AC-8
-- [ ] With System Settings › Keyboard › Keyboard navigation on, Tab reaches Check, Next, and Try Again with a sage focus border; with it off, Tab skips them and Return still checks → AC-8
+- [ ] With System Settings › Keyboard › Keyboard navigation on, Tab reaches Check, Next, and Try Again with a sage focus border; with it off, Tab skips them, Return still checks, and after a failure Return runs Try Again → AC-8
 - [ ] Reorder and match with Tab and Space only: place and remove words; pick, pair, and unpair items; each focused item has a sage border → AC-8
 - [ ] Press Esc while idle → nothing; while `Checking…` → check cancels and the input unlocks → AC-8, AC-10
 - [ ] Turn on "Make checking fail", check → message and Try Again; the input stays locked and readable at full contrast; Try Again checks again → AC-10
