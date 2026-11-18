@@ -2,10 +2,13 @@ import SwiftUI
 
 /// A live sample exercise: answer it, check it (a short fake wait), see the feedback, go on.
 /// With `simulatesFailure` on, checking fails so Try Again can be tried.
+///
+/// `simulatesFailure` is a binding, not a plain value: Return can run a Check action captured on an
+/// earlier render, so the action must read the toggle's live state, not a copy taken back then.
 struct SampleExerciseDemo: View {
     let exercise: SampleExercise
     let count: Int
-    let simulatesFailure: Bool
+    @Binding var simulatesFailure: Bool
 
     private enum Phase: Equatable {
         case answering, checking, failed, graded(FeedbackTone)

@@ -13,12 +13,12 @@ Build and open `Verba Dev.app`, then Debug › Design Gallery (⌥⌘D).
 - [ ] Lesson page: header shows `LESSON · SPANISH · SER AND ESTAR` and the serif title; the explanation shows headings, bold, italic, inline code, a nested list (indented), a quote with a sage bar, a code block, and the table; the column is 680 pt at default and widens with text size → AC-6
 - [ ] Markdown edge cases section: the HTML block and the thematic break show as plain text; the wide table scrolls sideways instead of clipping → AC-6
 - [ ] Every card shows a counter like `03/05` and its kind label; options read `[1]` to `[4]` in the given order → AC-7
-- [ ] Choice exercise, keyboard only: focus lands on the options; press 2 → option 2 selected (`›` and sage border); Return → `Checking…` with blinking cursor, then `✓ Correct` with the explanation inline; Return → Next resets → AC-8, AC-9
+- [x] Choice exercise, keyboard only: focus lands on the options; press 2 → option 2 selected (`›` and sage border); Return → `Checking…` with blinking cursor, then `✓ Correct` with the explanation inline; Return → Next resets → AC-8, AC-9
 - [ ] Pick option 1 instead → `✗ Not quite`, the answer `es` shown, the chosen row marked wrong and row 2 marked correct, three tones visibly different from sage → AC-9
 - [ ] Fill in and translate: Return checks; in translate Option Return inserts a new line → AC-8
 - [ ] With System Settings › Keyboard › Keyboard navigation on, Tab reaches Check, Next, and Try Again with a sage focus border; with it off, Tab skips them, Return still checks, and after a failure Return runs Try Again → AC-8
 - [ ] Reorder and match with Tab and Space only: place and remove words; pick, pair, and unpair items; each focused item has a sage border → AC-8
-- [ ] Press Esc while idle → nothing; while `Checking…` → check cancels and the input unlocks → AC-8, AC-10
+- [x] Press Esc while idle → nothing; while `Checking…` → check cancels and the input unlocks → AC-8, AC-10
 - [ ] Turn on "Make checking fail", check → message and Try Again; the input stays locked and readable at full contrast; Try Again checks again → AC-10
 - [ ] Turn on Reduce Motion → the panel appears without animation and the cursor is solid → AC-11
 - [ ] Turn on Increase Contrast → secondary text and borders brighten → AC-3
@@ -28,7 +28,7 @@ Build and open `Verba Dev.app`, then Debug › Design Gallery (⌥⌘D).
 - [ ] Focus the main window → File › Print… is disabled → AC-12
 
 ## Commands
-- [ ] `swift test --package-path Packages/VerbaKit` → all suites pass, including `ContrastTests`, `TextSizeTests`, `MarkdownDocumentTests`, `ExerciseComponentTests`, `LessonPrintTests`, `DesignDocTests` → AC-3, AC-5, AC-6, AC-7, AC-9, AC-12, AC-14
+- [x] `swift test --package-path Packages/VerbaKit` → all suites pass, including `ContrastTests`, `TextSizeTests`, `MarkdownDocumentTests`, `ExerciseComponentTests`, `LessonPrintTests`, `DesignDocTests` → AC-3, AC-5, AC-6, AC-7, AC-9, AC-12, AC-14
 - [ ] Add `import Core` to any file in `Sources/DesignSystem/`, run `swiftlint lint --strict` → fails with `design_system_is_domain_free`; remove it → AC-1
 - [ ] Change one hex value in `design.md`, run `swift test --filter DesignDocTests` → fails; revert → AC-14
 

@@ -7,6 +7,10 @@ import SwiftUI
 /// Return activates the primary button. For typed answers (`returnSubmitsFromInput`), the field
 /// submits Check itself, and the button takes Return only once it says Next. A card in a
 /// non live area (the gallery's static state grid) claims no keys at all.
+///
+/// On macOS, Return can run an action closure from an earlier render, so actions must read
+/// changing values from state (an `@Observable` model, `@State`, or a binding), never from a
+/// plain property the closure captured.
 public struct ExerciseCard<Input: View>: View {
     private let position: Int
     private let count: Int

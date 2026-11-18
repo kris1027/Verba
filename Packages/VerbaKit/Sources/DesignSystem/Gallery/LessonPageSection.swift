@@ -15,7 +15,7 @@ struct LessonPageSection: View {
                     SampleExerciseDemo(
                         exercise: exercise,
                         count: SampleLesson.exercises.count,
-                        simulatesFailure: simulatesFailure
+                        simulatesFailure: $simulatesFailure
                     )
                 }
             }
