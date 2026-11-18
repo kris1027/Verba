@@ -1,6 +1,8 @@
+import DesignSystem
 import SwiftUI
 
 /// Shown instead of the app when the saved data can't be opened, so a launch failure is never a crash.
+/// Its text follows Verba's text size like every content area.
 public struct LaunchErrorView: View {
     private let message: String
     private let showDatabase: () -> Void
@@ -17,15 +19,19 @@ public struct LaunchErrorView: View {
     public var body: some View {
         ContentUnavailableView {
             Label("Verba Can't Open Your Data", systemImage: "exclamationmark.triangle")
+                .themeFont(.readingHeading)
         } description: {
             Text(message)
+                .themeFont(.readingBody)
         } actions: {
             Button("Show Database in Finder", action: showDatabase)
                 .accessibilityHint("Opens Finder with your saved data selected.")
             Button("Quit", action: quit)
                 .accessibilityHint("Closes Verba.")
         }
-        .frame(minWidth: 480, minHeight: 320)
+        .verbaContentFont()
+        .frame(minWidth: 480, maxWidth: .infinity, minHeight: 320, maxHeight: .infinity)
+        .background(Theme.background)
     }
 }
 

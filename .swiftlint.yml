@@ -39,6 +39,12 @@ identifier_name:
     - db
     - id
     - ui
+    # Theme.Spacing steps (spec 0004): xs, s, m, l, xl.
+    - xs
+    - s
+    - m
+    - l
+    - xl
 
 # Architecture rules from AGENTS.md. `match_kinds` limits each rule to real
 # code, so a comment that mentions a module never trips it.
@@ -73,6 +79,14 @@ custom_rules:
     match_kinds: [keyword, identifier]
     included: '/Sources/Features/'
     message: "Features is presentation and imports Core only. Services arrive through initializers or @Environment."
+    severity: error
+
+  design_system_is_domain_free:
+    name: "DesignSystem is domain free"
+    regex: '^\s*(@testable\s+)?import\s+(Core|Persistence|ClaudeBridge|GRDB|Subprocess)\b'
+    match_kinds: [keyword, identifier]
+    included: '/Sources/DesignSystem/'
+    message: "DesignSystem knows nothing about the domain. Features maps Core values to plain strings and enums first."
     severity: error
 
   core_is_foundation_only:
